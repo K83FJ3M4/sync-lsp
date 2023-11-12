@@ -3,17 +3,19 @@ use std::io::Error;
 use std::ops::{Deref, DerefMut};
 use serde::de::DeserializeOwned;
 use serde_json::{Value, from_value};
-pub use transport::Transport;
-pub(crate) use jsonrpc::{Callback, ErrorCode, EmptyParams};
 use jsonrpc::RpcError;
 
+pub use transport::Transport;
+pub(crate) use jsonrpc::{Callback, ErrorCode, EmptyParams, RpcConnection};
+
 use crate::lifecycle::LifecycleService;
+use crate::window::WindowService;
 
 use self::jsonrpc::RpcConnectionImpl;
 
+mod rpc;
 mod jsonrpc;
 mod transport;
-mod rpc;
 mod lifecycle;
 
 pub struct Connection<T: 'static> {
@@ -23,7 +25,8 @@ pub struct Connection<T: 'static> {
     process_id: Option<u32>,
     root_uri: Option<String>,
     initialization_options: Option<Value>,
-    lifecycle: LifecycleService<T>
+    lifecycle: LifecycleService<T>,
+    pub(crate) window: WindowService<T>
 }
 
 impl<T> Connection<T> {
@@ -35,7 +38,8 @@ impl<T> Connection<T> {
             process_id: None,
             root_uri: None,
             initialization_options: None,
-            lifecycle: Default::default()
+            lifecycle: Default::default(),
+            window: Default::default()
         }
     }
 
