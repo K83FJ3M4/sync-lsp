@@ -1,5 +1,5 @@
 use crate::Connection;
-use crate::connection::Callback;
+use crate::connection::{Callback, EmptyParams};
 
 pub(crate) struct Initialized<T: 'static>
     (pub(crate) fn(&mut Connection<T>));
@@ -10,6 +10,6 @@ impl<T> Initialized<T> {
     
     pub(crate) fn callback(&self) -> Callback<Connection<T>> {
         let Initialized(callback) = *self;
-        Callback::notification(move |connection, _: ()| callback(connection))
+        Callback::notification(move |connection, _: EmptyParams| callback(connection))
     }
 }

@@ -4,7 +4,7 @@ use std::ops::{Deref, DerefMut};
 use serde::de::DeserializeOwned;
 use serde_json::{Value, from_value};
 pub use transport::Transport;
-pub(crate) use jsonrpc::{Callback, ErrorCode};
+pub(crate) use jsonrpc::{Callback, ErrorCode, EmptyParams};
 use jsonrpc::RpcError;
 
 use crate::lifecycle::LifecycleService;

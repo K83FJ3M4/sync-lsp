@@ -2,6 +2,7 @@ use crate::Transport;
 use serde_json::{Value, Error as JsonError, from_value, to_value};
 use serde::{Serialize, de::DeserializeOwned};
 pub(super) use message::Error as RpcError;
+pub(crate) use message::EmptyParams;
 pub use message::ErrorCode;
 
 mod message;
