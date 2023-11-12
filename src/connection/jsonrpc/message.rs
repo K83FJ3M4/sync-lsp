@@ -32,7 +32,7 @@ pub(crate) struct Error {
 
 #[repr(i32)]
 #[derive(Serialize_repr, Deserialize_repr, Debug)]
-pub(crate) enum ErrorCode {
+pub enum ErrorCode {
 	// Defined by initialize
 	UnknownProtocolVersion = 1,
 

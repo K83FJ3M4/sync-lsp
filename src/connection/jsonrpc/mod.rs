@@ -2,10 +2,11 @@ use crate::Transport;
 use serde_json::{Value, Error as JsonError, from_value, to_value};
 use serde::{Serialize, de::DeserializeOwned};
 pub(super) use message::Error as RpcError;
+pub use message::ErrorCode;
 
 mod message;
 
-pub(super) trait RpcConnection: Sized {
+pub(crate) trait RpcConnection: Sized + 'static {
     fn transport(&mut self) -> &mut Transport;
     fn resolve(&self, method: &str) -> Option<Callback<Self>>;
     fn take_error(&mut self) -> Option<RpcError>;
@@ -16,7 +17,7 @@ pub(super) trait RpcConnection: Sized {
         { RpcConnectionImpl::request(self, method, tag, params) }
 }
 
-pub(super) enum Callback<T: RpcConnection> {
+pub(crate) enum Callback<T: RpcConnection> {
     Request(Box<dyn Fn(&mut T, Value) -> Result<Value, JsonError>>),
     Notification(Box<dyn Fn(&mut T, Value) -> Result<(), JsonError>>),
     Response(Box<dyn Fn(&mut T, String, Option<Value>) -> Result<(), JsonError>>),
@@ -60,7 +61,7 @@ pub(super) mod RpcConnectionImpl {
     use super::message::ErrorCode;
     use super::{RpcConnection, Callback};
 
-    pub(super) fn serve(mut connection: impl RpcConnection) -> Result<(), Error> {
+    pub(crate) fn serve(mut connection: impl RpcConnection) -> Result<(), Error> {
         while let Some(message) = recv(&mut connection) {
             handle(&mut connection, message)
         }

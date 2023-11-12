@@ -1,22 +1,74 @@
+use log::error;
+use std::io::Error;
 use std::ops::{Deref, DerefMut};
+use serde::de::DeserializeOwned;
+use serde_json::{Value, from_value};
 pub use transport::Transport;
+pub(crate) use jsonrpc::{Callback, ErrorCode};
+use jsonrpc::RpcError;
+
+use crate::lifecycle::LifecycleService;
+
+use self::jsonrpc::RpcConnectionImpl;
 
 mod jsonrpc;
 mod transport;
+mod rpc;
+mod lifecycle;
 
-pub struct Connection<T> {
+pub struct Connection<T: 'static> {
     state: T,
-    transport: Transport
+    transport: Transport,
+    error: Option<RpcError>,
+    process_id: Option<u32>,
+    root_uri: Option<String>,
+    initialization_options: Option<Value>,
+    lifecycle: LifecycleService<T>
 }
 
 impl<T> Connection<T> {
     pub fn new(state: T, transport: Transport) -> Connection<T> {
         Connection {
             state,
-            transport
+            transport,
+            error: None,
+            process_id: None,
+            root_uri: None,
+            initialization_options: None,
+            lifecycle: Default::default()
         }
     }
 
+    pub fn serve(self) -> Result<(), Error> {
+        RpcConnectionImpl::serve(self)
+    }
+
+    pub fn error<R: Default>(&mut self, code: ErrorCode, message: String) -> R {
+        self.error = Some(RpcError {
+            code,
+            message
+        });
+        R::default()
+    }
+
+    pub fn process_id(&self) -> Option<u32> {
+        self.process_id
+    }
+
+    pub fn root_uri(&self) -> Option<&str> {
+        self.root_uri.as_ref().map(|uri| uri.as_str())
+    }
+
+    pub fn initialization_options<O: DeserializeOwned>(&self) -> Option<O> {
+        let Some(options) = self.initialization_options.as_ref() else { return None };
+        match from_value(options.clone()) {
+            Ok(options) => Some(options),
+            Err(error) => {
+                error!("Failed to deserialize initialization options: {}", error);
+                None
+            }
+        }
+    }
 }
 
 impl<T> Deref for Connection<T> {
