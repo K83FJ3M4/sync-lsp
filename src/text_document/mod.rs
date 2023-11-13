@@ -1,5 +1,5 @@
 use crate::{connection::Callback, Connection};
-use self::{did_open::DidOpen, did_change::DidChange, will_save::WillSave, will_save_wait_until::WillSaveWaitUntil, did_save::DidSave};
+use self::{did_open::DidOpen, did_change::DidChange, will_save::WillSave, will_save_wait_until::WillSaveWaitUntil, did_save::DidSave, did_close::DidClose};
 use serde::{Serialize, Deserialize};
 use serde_repr::Serialize_repr;
 
@@ -8,6 +8,7 @@ pub mod did_change;
 pub mod will_save;
 mod will_save_wait_until;
 mod did_save;
+mod did_close;
 
 pub type DocumentUri = String;
 
@@ -48,7 +49,8 @@ pub(super) struct TextDocumentService<T: 'static> {
     did_change: DidChange<T>,
     will_save: WillSave<T>,
     will_save_wait_until: WillSaveWaitUntil<T>,
-    did_save: DidSave<T>
+    did_save: DidSave<T>,
+    did_close: DidClose<T>
 }
 
 #[repr(i32)]
@@ -84,6 +86,7 @@ impl<T> TextDocumentService<T> {
             WillSave::<T>::METHOD => Some(self.will_save.callback()),
             WillSaveWaitUntil::<T>::METHOD => Some(self.will_save_wait_until.callback()),
             DidSave::<T>::METHOD => Some(self.did_save.callback()),
+            DidClose::<T>::METHOD => Some(self.did_close.callback()),
             _ => None
         }
     }
@@ -98,7 +101,8 @@ impl<T> Default for TextDocumentService<T> {
             did_change: Default::default(),
             will_save: Default::default(),
             will_save_wait_until: Default::default(),
-            did_save: Default::default()
+            did_save: Default::default(),
+            did_close: Default::default()
         }
     }
 }
