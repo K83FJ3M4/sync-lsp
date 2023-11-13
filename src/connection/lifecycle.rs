@@ -29,8 +29,8 @@ fn initialize<T>(connection: &mut Connection<T>, params: InitializeParams) -> In
             text_document_sync: Some(TextDocumentSyncOptions {
                 open_close: true,
                 change: connection.text_document.sync_kind,
-                will_save: false,
-                will_save_wait_until: false,
+                will_save: true,
+                will_save_wait_until: true,
                 save: connection.text_document.save_options
             }),
             hover_provider: false,

@@ -16,6 +16,7 @@ pub struct TextDocumentItem {
 }
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct DidOpenParams {
     text_document: TextDocumentItem,
 }

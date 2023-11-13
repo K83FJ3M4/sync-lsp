@@ -15,6 +15,7 @@ pub struct TextDocumentContentChangeEvent {
 }
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct DidChangeTextDocumentParams {
     text_document: VersionedTextDocumentIdentifier,
     content_changes: Vec<TextDocumentContentChangeEvent>
