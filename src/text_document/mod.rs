@@ -1,16 +1,36 @@
 use crate::{connection::Callback, Connection};
-use self::did_open::DidOpen;
-use serde::Serialize;
+use self::{did_open::DidOpen, did_change::DidChange};
+use serde::{Serialize, Deserialize};
 use serde_repr::Serialize_repr;
 
 pub mod did_open;
+mod did_change;
 
 pub type DocumentUri = String;
+
+#[derive(Deserialize, Debug)]
+pub struct Position {
+    pub line: i32,
+    pub character: i32,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct Range {
+    pub start: Position,
+    pub end: Position,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct VersionedTextDocumentIdentifier {
+    pub uri: DocumentUri,
+    pub version: i32,
+}
 
 pub(super) struct TextDocumentService<T: 'static> {
     pub(super) sync_kind: TextDocumentSyncKind,
     pub(super) save_options: SaveOptions,
-    did_open: DidOpen<T>
+    did_open: DidOpen<T>,
+    did_change: DidChange<T>
 }
 
 #[repr(i32)]
@@ -42,6 +62,7 @@ impl<T> TextDocumentService<T> {
     pub(super) fn resolve(&self, method: &str) -> Option<Callback<Connection<T>>> {
         match method {
             DidOpen::<T>::METHOD => Some(self.did_open.callback()),
+            DidChange::<T>::METHOD => Some(self.did_change.callback()),
             _ => None
         }
     }
@@ -52,7 +73,8 @@ impl<T> Default for TextDocumentService<T> {
         TextDocumentService {
             sync_kind: Default::default(),
             save_options: Default::default(),
-            did_open: Default::default()
+            did_open: Default::default(),
+            did_change: Default::default()
         }
     }
 }
