@@ -3,6 +3,7 @@ use serde_json::Value;
 
 use crate::Connection;
 use crate::connection::Callback;
+use crate::text_document::TextDocumentSyncOptions;
 
 //use crate::text_document::{TextDocumentClientCapabilities, TextDocumentSyncKind};
 
@@ -21,7 +22,7 @@ pub(crate) struct InitializeParams {
     //pub(crate) trace: Option<TraceValue>,
 }
 
-#[derive(Debug, Serialize, Default)]
+#[derive(Serialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct InitializeResult {
     pub(crate) capabilities: ServerCapabilities,
@@ -35,11 +36,11 @@ pub(crate) struct ClientCapabilities {
     //pub(crate) experimental: Option<Value>,
 }
 
-#[derive(Serialize, Debug, Default)]
+#[derive(Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct ServerCapabilities {
-    //#[serde(skip_serializing_if = "Option::is_none")]
-    //pub text_document_sync: Option<TextDocumentSyncKind>,
+pub(crate) struct ServerCapabilities {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub text_document_sync: Option<TextDocumentSyncOptions>,
     pub hover_provider: bool,
     //#[serde(skip_serializing_if = "Option::is_none")]
     //pub completion_provider: Option<CompletionOptions>,

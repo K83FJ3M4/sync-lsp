@@ -13,5 +13,6 @@ impl<T> RpcConnection for Connection<T> {
     fn resolve(&self, method: &str) -> Option<Callback<Self>> {
         self.lifecycle.resolve(method)
             .or(self.window.resolve(method))
+            .or(self.text_document.resolve(method))
     }
 }

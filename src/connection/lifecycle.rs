@@ -1,7 +1,7 @@
 use crate::Connection;
 use crate::lifecycle::initialize::{InitializeParams, InitializeResult, ServerCapabilities};
 use crate::lifecycle::{LifecycleService, Initialized, Initialize, Shutdown, Exit};
-
+use crate::text_document::TextDocumentSyncOptions;
 use super::ErrorCode;
 
 impl<T> Default for LifecycleService<T> {
@@ -26,6 +26,13 @@ fn initialize<T>(connection: &mut Connection<T>, params: InitializeParams) -> In
 
     InitializeResult {
         capabilities: ServerCapabilities {
+            text_document_sync: Some(TextDocumentSyncOptions {
+                open_close: true,
+                change: connection.text_document.sync_kind,
+                will_save: false,
+                will_save_wait_until: false,
+                save: connection.text_document.save_options
+            }),
             hover_provider: false,
             definition_provider: false,
             references_provider: false,

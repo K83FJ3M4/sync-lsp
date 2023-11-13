@@ -9,6 +9,7 @@ pub use transport::Transport;
 pub(crate) use jsonrpc::{Callback, ErrorCode, EmptyParams, RpcConnection};
 
 use crate::lifecycle::LifecycleService;
+use crate::text_document::TextDocumentService;
 use crate::window::WindowService;
 
 use self::jsonrpc::RpcConnectionImpl;
@@ -26,7 +27,8 @@ pub struct Connection<T: 'static> {
     root_uri: Option<String>,
     initialization_options: Option<Value>,
     lifecycle: LifecycleService<T>,
-    pub(crate) window: WindowService<T>
+    pub(crate) window: WindowService<T>,
+    pub(crate) text_document: TextDocumentService<T>
 }
 
 impl<T> Connection<T> {
@@ -39,7 +41,8 @@ impl<T> Connection<T> {
             root_uri: None,
             initialization_options: None,
             lifecycle: Default::default(),
-            window: Default::default()
+            window: Default::default(),
+            text_document: Default::default()
         }
     }
 
