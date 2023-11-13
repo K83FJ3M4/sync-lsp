@@ -1,4 +1,7 @@
+use crate::connection::Endpoint;
 use crate::{connection::Callback, Connection};
+use self::completion::{CompletionOptions, ResolveCompletionOptions};
+use self::publish_diagnostics::PublishDiagnostics;
 use self::{did_open::DidOpen, did_change::DidChange, will_save::WillSave, will_save_wait_until::WillSaveWaitUntil, did_save::DidSave, did_close::DidClose};
 use serde::{Serialize, Deserialize};
 use serde_repr::Serialize_repr;
@@ -9,10 +12,19 @@ pub mod will_save;
 mod will_save_wait_until;
 mod did_save;
 mod did_close;
+pub mod publish_diagnostics;
+pub mod completion;
 
 pub type DocumentUri = String;
 
-#[derive(Serialize, Debug)]
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+struct TextDocumentPositionParams {
+    pub text_document: TextDocumentIdentifer,
+    pub position: Position,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct TextEdit {
     pub range: Range,
@@ -50,7 +62,11 @@ pub(super) struct TextDocumentService<T: 'static> {
     will_save: WillSave<T>,
     will_save_wait_until: WillSaveWaitUntil<T>,
     did_save: DidSave<T>,
-    did_close: DidClose<T>
+    did_close: DidClose<T>,
+    #[allow(unused)]
+    publish_diagnostics: PublishDiagnostics,
+    pub(super) completion: Endpoint<T, CompletionOptions>,
+    resolve_completion: Endpoint<T, ResolveCompletionOptions>
 }
 
 #[repr(i32)]
@@ -87,6 +103,8 @@ impl<T> TextDocumentService<T> {
             WillSaveWaitUntil::<T>::METHOD => Some(self.will_save_wait_until.callback()),
             DidSave::<T>::METHOD => Some(self.did_save.callback()),
             DidClose::<T>::METHOD => Some(self.did_close.callback()),
+            CompletionOptions::METHOD => Some(self.completion.callback()),
+            ResolveCompletionOptions::METHOD => Some(self.resolve_completion.callback()),
             _ => None
         }
     }
@@ -102,7 +120,10 @@ impl<T> Default for TextDocumentService<T> {
             will_save: Default::default(),
             will_save_wait_until: Default::default(),
             did_save: Default::default(),
-            did_close: Default::default()
+            did_close: Default::default(),
+            publish_diagnostics: Default::default(),
+            completion: CompletionOptions::endpoint(),
+            resolve_completion: ResolveCompletionOptions::endpoint()
         }
     }
 }

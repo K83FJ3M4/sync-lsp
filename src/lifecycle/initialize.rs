@@ -4,6 +4,7 @@ use serde_json::Value;
 use crate::Connection;
 use crate::connection::Callback;
 use crate::text_document::TextDocumentSyncOptions;
+use crate::text_document::completion::CompletionOptions;
 
 //use crate::text_document::{TextDocumentClientCapabilities, TextDocumentSyncKind};
 
@@ -42,8 +43,8 @@ pub(crate) struct ServerCapabilities {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub text_document_sync: Option<TextDocumentSyncOptions>,
     pub hover_provider: bool,
-    //#[serde(skip_serializing_if = "Option::is_none")]
-    //pub completion_provider: Option<CompletionOptions>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub completion_provider: Option<CompletionOptions>,
     //#[serde(skip_serializing_if = "Option::is_none")]
     //pub signature_help_provider: Option<SignatureHelpOptions>,
     pub definition_provider: bool,

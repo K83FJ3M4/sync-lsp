@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use crate::Transport;
 use serde_json::{Value, Error as JsonError, from_value, to_value};
 use serde::{Serialize, de::DeserializeOwned};
@@ -19,14 +21,25 @@ pub(crate) trait RpcConnection: Sized + 'static {
 }
 
 pub(crate) enum Callback<T: RpcConnection> {
-    Request(Box<dyn Fn(&mut T, Value) -> Result<Value, JsonError>>),
-    Notification(Box<dyn Fn(&mut T, Value) -> Result<(), JsonError>>),
-    Response(Box<dyn Fn(&mut T, String, Option<Value>) -> Result<(), JsonError>>),
+    Request(Rc<dyn Fn(&mut T, Value) -> Result<Value, JsonError>>),
+    Notification(Rc<dyn Fn(&mut T, Value) -> Result<(), JsonError>>),
+    Response(Rc<dyn Fn(&mut T, String, Option<Value>) -> Result<(), JsonError>>),
+}
+
+impl<T: RpcConnection> Clone for Callback<T> {
+    fn clone(&self) -> Self {
+        match self {
+            Callback::Request(callback) => Callback::Request(callback.clone()),
+            Callback::Notification(callback) => Callback::Notification(callback.clone()),
+            Callback::Response(callback) => Callback::Response(callback.clone()),
+        }
+    }
+
 }
 
 impl<T: RpcConnection> Callback<T> {
     pub(crate) fn request<P: DeserializeOwned, R: 'static + Serialize>(callback: impl 'static + Fn(&mut T, P) -> R) -> Self {
-        Self::Request(Box::new(move |server, value| {
+        Self::Request(Rc::new(move |server, value| {
             let params = from_value(value)?;
             let result = callback(server, params);
             to_value(result)
@@ -34,14 +47,14 @@ impl<T: RpcConnection> Callback<T> {
     }
 
     pub(crate) fn notification<P: DeserializeOwned>(callback: impl 'static + Fn(&mut T, P)) -> Self {
-        Self::Notification(Box::new(move |server, value| {
+        Self::Notification(Rc::new(move |server, value| {
             let params = from_value(value)?;
             Ok(callback(server, params))
         }))
     }
 
     pub(crate) fn response<P: DeserializeOwned + Default>(callback: impl 'static + Fn(&mut T, String, P)) -> Self {
-        Self::Response(Box::new(move |server, id, value| {
+        Self::Response(Rc::new(move |server, id, value| {
             match value.map(|value| from_value(value)) {
                 Some(Ok(params)) => Ok(callback(server, id, params)),
                 Some(Err(error)) => Err(error),

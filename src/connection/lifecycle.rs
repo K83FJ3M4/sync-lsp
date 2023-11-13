@@ -33,6 +33,7 @@ fn initialize<T>(connection: &mut Connection<T>, params: InitializeParams) -> In
                 will_save_wait_until: true,
                 save: connection.text_document.save_options
             }),
+            completion_provider: Some(connection.text_document.completion.options()),
             hover_provider: false,
             definition_provider: false,
             references_provider: false,

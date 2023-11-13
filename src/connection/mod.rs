@@ -7,6 +7,7 @@ use jsonrpc::RpcError;
 
 pub use transport::Transport;
 pub(crate) use jsonrpc::{Callback, ErrorCode, EmptyParams, RpcConnection};
+pub(crate) use rpc::Endpoint;
 
 use crate::lifecycle::LifecycleService;
 use crate::text_document::TextDocumentService;
