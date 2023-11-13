@@ -1,12 +1,18 @@
 use crate::{connection::Callback, Connection};
-use self::{did_open::DidOpen, did_change::DidChange};
+use self::{did_open::DidOpen, did_change::DidChange, will_save::WillSave};
 use serde::{Serialize, Deserialize};
 use serde_repr::Serialize_repr;
 
 pub mod did_open;
-mod did_change;
+pub mod did_change;
+pub mod will_save;
 
 pub type DocumentUri = String;
+
+#[derive(Deserialize, Debug)]
+pub struct TextDocumentIdentifer {
+    pub uri: DocumentUri,
+}
 
 #[derive(Deserialize, Debug)]
 pub struct Position {
@@ -30,7 +36,8 @@ pub(super) struct TextDocumentService<T: 'static> {
     pub(super) sync_kind: TextDocumentSyncKind,
     pub(super) save_options: SaveOptions,
     did_open: DidOpen<T>,
-    did_change: DidChange<T>
+    did_change: DidChange<T>,
+    will_save: WillSave<T>
 }
 
 #[repr(i32)]
@@ -63,6 +70,7 @@ impl<T> TextDocumentService<T> {
         match method {
             DidOpen::<T>::METHOD => Some(self.did_open.callback()),
             DidChange::<T>::METHOD => Some(self.did_change.callback()),
+            WillSave::<T>::METHOD => Some(self.will_save.callback()),
             _ => None
         }
     }
@@ -74,7 +82,8 @@ impl<T> Default for TextDocumentService<T> {
             sync_kind: Default::default(),
             save_options: Default::default(),
             did_open: Default::default(),
-            did_change: Default::default()
+            did_change: Default::default(),
+            will_save: Default::default()
         }
     }
 }
