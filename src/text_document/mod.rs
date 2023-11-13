@@ -1,5 +1,5 @@
 use crate::{connection::Callback, Connection};
-use self::{did_open::DidOpen, did_change::DidChange, will_save::WillSave, will_save_wait_until::WillSaveWaitUntil};
+use self::{did_open::DidOpen, did_change::DidChange, will_save::WillSave, will_save_wait_until::WillSaveWaitUntil, did_save::DidSave};
 use serde::{Serialize, Deserialize};
 use serde_repr::Serialize_repr;
 
@@ -7,6 +7,7 @@ pub mod did_open;
 pub mod did_change;
 pub mod will_save;
 mod will_save_wait_until;
+mod did_save;
 
 pub type DocumentUri = String;
 
@@ -17,7 +18,7 @@ pub struct TextEdit {
     pub new_text: String,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct TextDocumentIdentifer {
     pub uri: DocumentUri,
 }
@@ -46,7 +47,8 @@ pub(super) struct TextDocumentService<T: 'static> {
     did_open: DidOpen<T>,
     did_change: DidChange<T>,
     will_save: WillSave<T>,
-    will_save_wait_until: WillSaveWaitUntil<T>
+    will_save_wait_until: WillSaveWaitUntil<T>,
+    did_save: DidSave<T>
 }
 
 #[repr(i32)]
@@ -81,6 +83,7 @@ impl<T> TextDocumentService<T> {
             DidChange::<T>::METHOD => Some(self.did_change.callback()),
             WillSave::<T>::METHOD => Some(self.will_save.callback()),
             WillSaveWaitUntil::<T>::METHOD => Some(self.will_save_wait_until.callback()),
+            DidSave::<T>::METHOD => Some(self.did_save.callback()),
             _ => None
         }
     }
@@ -94,7 +97,8 @@ impl<T> Default for TextDocumentService<T> {
             did_open: Default::default(),
             did_change: Default::default(),
             will_save: Default::default(),
-            will_save_wait_until: Default::default()
+            will_save_wait_until: Default::default(),
+            did_save: Default::default()
         }
     }
 }
