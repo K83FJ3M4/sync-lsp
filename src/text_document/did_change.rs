@@ -1,10 +1,10 @@
-use crate::Connection;
+use crate::{Connection, connection::Endpoint};
 use crate::connection::Callback;
 use serde::Deserialize;
 use super::{VersionedTextDocumentIdentifier, Range};
 
-pub(crate) struct DidChange<T: 'static>
-    (pub(crate) fn(&mut Connection<T>, text_document: VersionedTextDocumentIdentifier, content_changes: Vec<TextDocumentContentChangeEvent>));
+#[derive(Default, Clone)]
+pub(crate) struct DidChangeOptions;
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -21,24 +21,19 @@ struct DidChangeTextDocumentParams {
     content_changes: Vec<TextDocumentContentChangeEvent>
 }
 
-impl<T> DidChange<T> {
+impl DidChangeOptions {
 
     pub(crate) const METHOD: &'static str = "textDocument/didChange";
     
-    pub(crate) fn callback(&self) -> Callback<Connection<T>> {
-        let DidChange(callback) = *self;
-        Callback::notification(move |connection, params: DidChangeTextDocumentParams| callback(connection, params.text_document, params.content_changes))
+    pub(super) fn endpoint<T>() -> Endpoint<T, DidChangeOptions> {
+        Endpoint::new(Callback::notification(|_, _: DidChangeTextDocumentParams| ()))
     }
 }
 
 impl<T> Connection<T> {
     pub fn on_did_change(&mut self, callback: fn(&mut Connection<T>, VersionedTextDocumentIdentifier, Vec<TextDocumentContentChangeEvent>)) {
-        self.text_document.did_change = DidChange(callback);
-    }
-}
-
-impl<T> Default for DidChange<T> {
-    fn default() -> Self {
-        DidChange(|_, _, _| {})
+        self.text_document.did_change.set_callback(Callback::notification(move |connection, params: DidChangeTextDocumentParams| {
+            callback(connection, params.text_document, params.content_changes)
+        }));
     }
 }
