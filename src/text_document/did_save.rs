@@ -1,10 +1,14 @@
 use crate::Connection;
-use crate::connection::Callback;
+use crate::connection::{Callback, Endpoint};
 use serde::Deserialize;
 use super::TextDocumentIdentifer;
+use serde::Serialize;
 
-pub(crate) struct DidSave<T: 'static>
-    (pub(crate) fn(&mut Connection<T>, text_document: TextDocumentIdentifer, text: Option<String>));
+#[derive(Serialize, Default, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct DidSaveOptions {
+    pub include_text: bool
+}
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -14,24 +18,23 @@ struct DidSaveTextDocumentParams {
 }
 
 
-impl<T> DidSave<T> {
+impl DidSaveOptions {
 
     pub(crate) const METHOD: &'static str = "textDocument/didSave";
     
-    pub(crate) fn callback(&self) -> Callback<Connection<T>> {
-        let DidSave(callback) = *self;
-        Callback::notification(move |connection, params: DidSaveTextDocumentParams| callback(connection, params.text_document, params.text))
+    pub(super) fn endpoint<T>() -> Endpoint<T, DidSaveOptions> {
+        Endpoint::new(Callback::notification(|_, _: DidSaveTextDocumentParams| ()))
     }
 }
 
 impl<T> Connection<T> {
     pub fn on_did_save(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer, Option<String>)) {
-        self.text_document.did_save = DidSave(callback);
+        self.text_document.did_save.set_callback(Callback::notification(move |connection, params: DidSaveTextDocumentParams| {
+            callback(connection, params.text_document, params.text)
+        }))
     }
-}
 
-impl<T> Default for DidSave<T> {
-    fn default() -> Self {
-        DidSave(|_, _, _| {})
+    pub fn set_save_options(&mut self, save_options: DidSaveOptions) {
+        self.text_document.did_save.set_options(save_options);
     }
 }

@@ -2,7 +2,7 @@ use crate::connection::Endpoint;
 use crate::{connection::Callback, Connection};
 use self::completion::{CompletionOptions, ResolveCompletionOptions};
 use self::publish_diagnostics::PublishDiagnostics;
-use self::{did_open::DidOpenOptions, did_change::DidChangeOptions, will_save::WillSave, will_save_wait_until::WillSaveWaitUntil, did_save::DidSave, did_close::DidCloseOptions};
+use self::{did_open::DidOpenOptions, did_change::DidChangeOptions, will_save::WillSave, will_save_wait_until::WillSaveWaitUntil, did_save::DidSaveOptions, did_close::DidCloseOptions};
 use serde::{Serialize, Deserialize};
 use serde_repr::Serialize_repr;
 
@@ -56,12 +56,11 @@ pub struct VersionedTextDocumentIdentifier {
 
 pub(super) struct TextDocumentService<T: 'static> {
     pub(super) sync_kind: TextDocumentSyncKind,
-    pub(super) save_options: SaveOptions,
     did_open: Endpoint<T, DidOpenOptions>,
     did_change: Endpoint<T, DidChangeOptions>,
     will_save: WillSave<T>,
     will_save_wait_until: WillSaveWaitUntil<T>,
-    did_save: DidSave<T>,
+    pub(super) did_save: Endpoint<T, DidSaveOptions>,
     did_close: Endpoint<T, DidCloseOptions>,
     #[allow(unused)]
     publish_diagnostics: PublishDiagnostics,
@@ -85,13 +84,7 @@ pub(crate) struct TextDocumentSyncOptions {
     pub change: TextDocumentSyncKind,
     pub will_save: bool,
     pub will_save_wait_until: bool,
-    pub save: SaveOptions
-}
-
-#[derive(Serialize, Default, Clone, Copy)]
-#[serde(rename_all = "camelCase")]
-pub struct SaveOptions {
-    pub include_text: bool
+    pub save: DidSaveOptions
 }
 
 impl<T> TextDocumentService<T> {
@@ -101,7 +94,7 @@ impl<T> TextDocumentService<T> {
             DidChangeOptions::METHOD => Some(self.did_change.callback()),
             WillSave::<T>::METHOD => Some(self.will_save.callback()),
             WillSaveWaitUntil::<T>::METHOD => Some(self.will_save_wait_until.callback()),
-            DidSave::<T>::METHOD => Some(self.did_save.callback()),
+            DidSaveOptions::METHOD => Some(self.did_save.callback()),
             DidCloseOptions::METHOD => Some(self.did_close.callback()),
             CompletionOptions::METHOD => Some(self.completion.callback()),
             ResolveCompletionOptions::METHOD => Some(self.resolve_completion.callback()),
@@ -114,12 +107,11 @@ impl<T> Default for TextDocumentService<T> {
     fn default() -> Self {
         TextDocumentService {
             sync_kind: Default::default(),
-            save_options: Default::default(),
             did_open: DidOpenOptions::endpoint(),
             did_change: DidChangeOptions::endpoint(),
             will_save: Default::default(),
             will_save_wait_until: Default::default(),
-            did_save: Default::default(),
+            did_save: DidSaveOptions::endpoint(),
             did_close: DidCloseOptions::endpoint(),
             publish_diagnostics: Default::default(),
             completion: CompletionOptions::endpoint(),
@@ -131,9 +123,5 @@ impl<T> Default for TextDocumentService<T> {
 impl<T> Connection<T> {
     pub fn set_document_sync(&mut self, sync_kind: TextDocumentSyncKind) {
         self.text_document.sync_kind = sync_kind;
-    }
-
-    pub fn set_save_options(&mut self, save_options: SaveOptions) {
-        self.text_document.save_options = save_options;
     }
 }

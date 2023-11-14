@@ -31,7 +31,7 @@ fn initialize<T>(connection: &mut Connection<T>, params: InitializeParams) -> In
                 change: connection.text_document.sync_kind,
                 will_save: true,
                 will_save_wait_until: true,
-                save: connection.text_document.save_options
+                save: connection.text_document.did_save.options()
             }),
             completion_provider: Some(connection.text_document.completion.options()),
             hover_provider: false,
