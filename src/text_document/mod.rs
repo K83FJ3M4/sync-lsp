@@ -31,6 +31,12 @@ pub struct TextEdit {
     pub new_text: String,
 }
 
+#[derive(Serialize, Debug)]
+pub struct Location {
+    pub uri: DocumentUri,
+    pub range: Range,
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TextDocumentIdentifer {
     pub uri: DocumentUri,

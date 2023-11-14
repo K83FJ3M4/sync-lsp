@@ -1,19 +1,11 @@
 use crate::{Connection, connection::Endpoint};
 use crate::connection::Callback;
 use serde::Deserialize;
-use serde_repr::Deserialize_repr;
+use super::will_save::TextDocumentSaveReason;
 use super::{TextDocumentIdentifer, TextEdit};
 
 #[derive(Default, Clone)]
 pub(crate) struct WillSaveWaitUntilOptions;
-
-#[repr(i32)]
-#[derive(Deserialize_repr, Debug)]
-pub enum TextDocumentSaveReason {
-    Manual = 1,
-    AfterDelay = 2,
-    FocusOut = 3
-}
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
