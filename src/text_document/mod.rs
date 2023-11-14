@@ -2,7 +2,7 @@ use crate::connection::Endpoint;
 use crate::{connection::Callback, Connection};
 use self::completion::{CompletionOptions, ResolveCompletionOptions};
 use self::publish_diagnostics::PublishDiagnostics;
-use self::{did_open::DidOpen, did_change::DidChangeOptions, will_save::WillSave, will_save_wait_until::WillSaveWaitUntil, did_save::DidSave, did_close::DidClose};
+use self::{did_open::DidOpen, did_change::DidChangeOptions, will_save::WillSave, will_save_wait_until::WillSaveWaitUntil, did_save::DidSave, did_close::DidCloseOptions};
 use serde::{Serialize, Deserialize};
 use serde_repr::Serialize_repr;
 
@@ -62,7 +62,7 @@ pub(super) struct TextDocumentService<T: 'static> {
     will_save: WillSave<T>,
     will_save_wait_until: WillSaveWaitUntil<T>,
     did_save: DidSave<T>,
-    did_close: DidClose<T>,
+    did_close: Endpoint<T, DidCloseOptions>,
     #[allow(unused)]
     publish_diagnostics: PublishDiagnostics,
     pub(super) completion: Endpoint<T, CompletionOptions>,
@@ -102,7 +102,7 @@ impl<T> TextDocumentService<T> {
             WillSave::<T>::METHOD => Some(self.will_save.callback()),
             WillSaveWaitUntil::<T>::METHOD => Some(self.will_save_wait_until.callback()),
             DidSave::<T>::METHOD => Some(self.did_save.callback()),
-            DidClose::<T>::METHOD => Some(self.did_close.callback()),
+            DidCloseOptions::METHOD => Some(self.did_close.callback()),
             CompletionOptions::METHOD => Some(self.completion.callback()),
             ResolveCompletionOptions::METHOD => Some(self.resolve_completion.callback()),
             _ => None
@@ -120,7 +120,7 @@ impl<T> Default for TextDocumentService<T> {
             will_save: Default::default(),
             will_save_wait_until: Default::default(),
             did_save: Default::default(),
-            did_close: Default::default(),
+            did_close: DidCloseOptions::endpoint(),
             publish_diagnostics: Default::default(),
             completion: CompletionOptions::endpoint(),
             resolve_completion: ResolveCompletionOptions::endpoint()
