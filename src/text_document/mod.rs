@@ -1,8 +1,8 @@
 use crate::connection::Endpoint;
 use crate::{connection::Callback, Connection};
 use self::completion::{CompletionOptions, ResolveCompletionOptions};
-use self::publish_diagnostics::PublishDiagnostics;
-use self::{did_open::DidOpenOptions, did_change::DidChangeOptions, will_save::WillSave, will_save_wait_until::WillSaveWaitUntil, did_save::DidSaveOptions, did_close::DidCloseOptions};
+use self::publish_diagnostics::PublishDiagnosticsOptions;
+use self::{did_open::DidOpenOptions, did_change::DidChangeOptions, will_save::WillSave, will_save_wait_until::WillSaveWaitUntilOptions, did_save::DidSaveOptions, did_close::DidCloseOptions};
 use serde::{Serialize, Deserialize};
 use serde_repr::Serialize_repr;
 
@@ -59,11 +59,11 @@ pub(super) struct TextDocumentService<T: 'static> {
     did_open: Endpoint<T, DidOpenOptions>,
     did_change: Endpoint<T, DidChangeOptions>,
     will_save: WillSave<T>,
-    will_save_wait_until: WillSaveWaitUntil<T>,
+    will_save_wait_until: Endpoint<T, WillSaveWaitUntilOptions>,
     pub(super) did_save: Endpoint<T, DidSaveOptions>,
     did_close: Endpoint<T, DidCloseOptions>,
     #[allow(unused)]
-    publish_diagnostics: PublishDiagnostics,
+    publish_diagnostics: PublishDiagnosticsOptions,
     pub(super) completion: Endpoint<T, CompletionOptions>,
     resolve_completion: Endpoint<T, ResolveCompletionOptions>
 }
@@ -93,7 +93,7 @@ impl<T> TextDocumentService<T> {
             DidOpenOptions::METHOD => Some(self.did_open.callback()),
             DidChangeOptions::METHOD => Some(self.did_change.callback()),
             WillSave::<T>::METHOD => Some(self.will_save.callback()),
-            WillSaveWaitUntil::<T>::METHOD => Some(self.will_save_wait_until.callback()),
+            WillSaveWaitUntilOptions::METHOD => Some(self.will_save_wait_until.callback()),
             DidSaveOptions::METHOD => Some(self.did_save.callback()),
             DidCloseOptions::METHOD => Some(self.did_close.callback()),
             CompletionOptions::METHOD => Some(self.completion.callback()),
@@ -110,7 +110,7 @@ impl<T> Default for TextDocumentService<T> {
             did_open: DidOpenOptions::endpoint(),
             did_change: DidChangeOptions::endpoint(),
             will_save: Default::default(),
-            will_save_wait_until: Default::default(),
+            will_save_wait_until: WillSaveWaitUntilOptions::endpoint(),
             did_save: DidSaveOptions::endpoint(),
             did_close: DidCloseOptions::endpoint(),
             publish_diagnostics: Default::default(),

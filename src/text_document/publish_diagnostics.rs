@@ -6,8 +6,8 @@ use crate::connection::RpcConnection;
 
 use super::{DocumentUri, Range};
 
-#[derive(Default)]
-pub(super) struct PublishDiagnostics;
+#[derive(Default, Clone)]
+pub(super) struct PublishDiagnosticsOptions;
 
 #[derive(Serialize, Debug)]
 pub struct Diagnostic {
@@ -33,14 +33,14 @@ struct PublishDiagnosticsParams {
     diagnostics: Vec<Diagnostic>
 }
 
-impl PublishDiagnostics {
+impl PublishDiagnosticsOptions {
     const METHOD: &'static str = "textDocument/publishDiagnostics";
 }
 
 impl<T> Connection<T> {
     pub fn publish_diagnostics(&mut self, uri: DocumentUri, diagnostics: Vec<Diagnostic>) {
         self.notify(
-            PublishDiagnostics::METHOD,
+            PublishDiagnosticsOptions::METHOD,
             PublishDiagnosticsParams {
                 uri,
                 diagnostics
