@@ -1,10 +1,10 @@
 use crate::Connection;
-use crate::connection::Callback;
+use crate::connection::{Callback, Endpoint};
 use serde::Deserialize;
 use super::DocumentUri;
 
-pub(crate) struct DidOpen<T: 'static>
-    (pub(crate) fn(&mut Connection<T>, text_document: TextDocumentItem));
+#[derive(Default, Clone)]
+pub(crate) struct DidOpenOptions;
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -21,24 +21,19 @@ struct DidOpenParams {
     text_document: TextDocumentItem,
 }
 
-impl<T> DidOpen<T> {
+impl DidOpenOptions {
 
     pub(crate) const METHOD: &'static str = "textDocument/didOpen";
     
-    pub(crate) fn callback(&self) -> Callback<Connection<T>> {
-        let DidOpen(callback) = *self;
-        Callback::notification(move |connection, params: DidOpenParams| callback(connection, params.text_document))
+    pub(super) fn endpoint<T>() -> Endpoint<T, DidOpenOptions> {
+        Endpoint::new(Callback::notification(|_, _: DidOpenParams| ()))
     }
 }
 
 impl<T> Connection<T> {
     pub fn on_did_open(&mut self, callback: fn(&mut Connection<T>, TextDocumentItem)) {
-        self.text_document.did_open = DidOpen(callback);
-    }
-}
-
-impl<T> Default for DidOpen<T> {
-    fn default() -> Self {
-        DidOpen(|_, _| {})
+        self.text_document.did_open.set_callback(Callback::notification(move |connection, params: DidOpenParams| {
+            callback(connection, params.text_document)
+        }))
     }
 }
