@@ -4,3 +4,4 @@ mod connection;
 mod lifecycle;
 pub mod text_document;
 pub mod window;
+pub mod workspace;

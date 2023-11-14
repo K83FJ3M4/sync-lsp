@@ -12,6 +12,7 @@ pub(crate) use rpc::Endpoint;
 use crate::lifecycle::LifecycleService;
 use crate::text_document::TextDocumentService;
 use crate::window::WindowService;
+use crate::workspace::WorkspaceService;
 
 use self::jsonrpc::RpcConnectionImpl;
 
@@ -29,7 +30,8 @@ pub struct Connection<T: 'static> {
     initialization_options: Option<Value>,
     lifecycle: LifecycleService<T>,
     pub(crate) window: WindowService<T>,
-    pub(crate) text_document: TextDocumentService<T>
+    pub(crate) text_document: TextDocumentService<T>,
+    pub(crate) workspace: WorkspaceService<T>
 }
 
 impl<T> Connection<T> {
@@ -43,7 +45,8 @@ impl<T> Connection<T> {
             initialization_options: None,
             lifecycle: Default::default(),
             window: Default::default(),
-            text_document: Default::default()
+            text_document: Default::default(),
+            workspace: Default::default()
         }
     }
 

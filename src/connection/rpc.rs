@@ -19,6 +19,7 @@ impl<T> RpcConnection for Connection<T> {
         self.lifecycle.resolve(method)
             .or(self.window.resolve(method))
             .or(self.text_document.resolve(method))
+            .or(self.workspace.resolve(method))
     }
 }
 
