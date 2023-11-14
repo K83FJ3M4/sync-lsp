@@ -2,7 +2,7 @@ use crate::connection::Endpoint;
 use crate::{connection::Callback, Connection};
 use self::completion::{CompletionOptions, ResolveCompletionOptions};
 use self::publish_diagnostics::PublishDiagnosticsOptions;
-use self::{did_open::DidOpenOptions, did_change::DidChangeOptions, will_save::WillSave, will_save_wait_until::WillSaveWaitUntilOptions, did_save::DidSaveOptions, did_close::DidCloseOptions};
+use self::{did_open::DidOpenOptions, did_change::DidChangeOptions, will_save::WillSaveOptions, will_save_wait_until::WillSaveWaitUntilOptions, did_save::DidSaveOptions, did_close::DidCloseOptions};
 use serde::{Serialize, Deserialize};
 use serde_repr::Serialize_repr;
 
@@ -58,7 +58,7 @@ pub(super) struct TextDocumentService<T: 'static> {
     pub(super) sync_kind: TextDocumentSyncKind,
     did_open: Endpoint<T, DidOpenOptions>,
     did_change: Endpoint<T, DidChangeOptions>,
-    will_save: WillSave<T>,
+    will_save: Endpoint<T, WillSaveOptions>,
     will_save_wait_until: Endpoint<T, WillSaveWaitUntilOptions>,
     pub(super) did_save: Endpoint<T, DidSaveOptions>,
     did_close: Endpoint<T, DidCloseOptions>,
@@ -92,7 +92,7 @@ impl<T> TextDocumentService<T> {
         match method {
             DidOpenOptions::METHOD => Some(self.did_open.callback()),
             DidChangeOptions::METHOD => Some(self.did_change.callback()),
-            WillSave::<T>::METHOD => Some(self.will_save.callback()),
+            WillSaveOptions::METHOD => Some(self.will_save.callback()),
             WillSaveWaitUntilOptions::METHOD => Some(self.will_save_wait_until.callback()),
             DidSaveOptions::METHOD => Some(self.did_save.callback()),
             DidCloseOptions::METHOD => Some(self.did_close.callback()),
@@ -109,7 +109,7 @@ impl<T> Default for TextDocumentService<T> {
             sync_kind: Default::default(),
             did_open: DidOpenOptions::endpoint(),
             did_change: DidChangeOptions::endpoint(),
-            will_save: Default::default(),
+            will_save: WillSaveOptions::endpoint(),
             will_save_wait_until: WillSaveWaitUntilOptions::endpoint(),
             did_save: DidSaveOptions::endpoint(),
             did_close: DidCloseOptions::endpoint(),

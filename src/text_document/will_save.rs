@@ -1,11 +1,11 @@
 use crate::Connection;
-use crate::connection::Callback;
+use crate::connection::{Callback, Endpoint};
 use serde::Deserialize;
 use serde_repr::Deserialize_repr;
 use super::TextDocumentIdentifer;
 
-pub(crate) struct WillSave<T: 'static>
-    (pub(crate) fn(&mut Connection<T>, text_document: TextDocumentIdentifer, reason: TextDocumentSaveReason));
+#[derive(Default, Clone)]
+pub(crate) struct WillSaveOptions;
 
 #[repr(i32)]
 #[derive(Deserialize_repr, Debug)]
@@ -22,24 +22,19 @@ struct WillSaveTextDocumentParams {
     reason: TextDocumentSaveReason
 }
 
-impl<T> WillSave<T> {
+impl WillSaveOptions {
 
     pub(crate) const METHOD: &'static str = "textDocument/willSave";
     
-    pub(crate) fn callback(&self) -> Callback<Connection<T>> {
-        let WillSave(callback) = *self;
-        Callback::notification(move |connection, params: WillSaveTextDocumentParams| callback(connection, params.text_document, params.reason))
+    pub(super) fn endpoint<T>() -> Endpoint<T, WillSaveOptions> {
+        Endpoint::new(Callback::notification(|_, _: WillSaveTextDocumentParams| ()))
     }
 }
 
 impl<T> Connection<T> {
     pub fn on_will_save(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer, TextDocumentSaveReason)) {
-        self.text_document.will_save = WillSave(callback);
-    }
-}
-
-impl<T> Default for WillSave<T> {
-    fn default() -> Self {
-        WillSave(|_, _, _| {})
+        self.text_document.will_save.set_callback(Callback::notification(move |connection, params: WillSaveTextDocumentParams| {
+            callback(connection, params.text_document, params.reason)
+        }))
     }
 }
