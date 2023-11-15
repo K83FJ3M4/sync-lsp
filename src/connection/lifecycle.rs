@@ -44,7 +44,7 @@ fn initialize<T>(connection: &mut Connection<T>, params: InitializeParams) -> In
             workspace_symbol_provider: true,
             code_action_provider: false,
             document_formatting_provider: true,
-            document_range_formatting_provider: false,
+            document_range_formatting_provider: true,
             rename_provider: false
         }
     }

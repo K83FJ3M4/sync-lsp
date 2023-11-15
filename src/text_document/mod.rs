@@ -6,6 +6,7 @@ use self::document_symbol::DocumentSymbolOptions;
 use self::formatting::DocumentFormattingOptions;
 use self::hover::HoverOptions;
 use self::publish_diagnostics::PublishDiagnosticsOptions;
+use self::range_formatting::RangeFormattingOptions;
 use self::references::ReferenceOptions;
 use self::signature_help::SignatureHelpOptions;
 use self::{did_open::DidOpenOptions, did_change::DidChangeOptions, will_save::WillSaveOptions, will_save_wait_until::WillSaveWaitUntilOptions, did_save::DidSaveOptions, did_close::DidCloseOptions};
@@ -26,6 +27,7 @@ pub mod references;
 pub mod document_highlight;
 mod document_symbol;
 pub mod formatting;
+mod range_formatting;
 
 pub type DocumentUri = String;
 
@@ -89,7 +91,8 @@ pub(super) struct TextDocumentService<T: 'static> {
     references: Endpoint<T, ReferenceOptions>,
     document_highlight: Endpoint<T, DocumentHighlightOptions>,
     document_symbol: Endpoint<T, DocumentSymbolOptions>,
-    formatting: Endpoint<T, DocumentFormattingOptions>
+    formatting: Endpoint<T, DocumentFormattingOptions>,
+    range_formatting: Endpoint<T, RangeFormattingOptions>
 }
 
 #[repr(i32)]
@@ -128,6 +131,7 @@ impl<T> TextDocumentService<T> {
             DocumentHighlightOptions::METHOD => Some(self.document_highlight.callback()),
             DocumentSymbolOptions::METHOD => Some(self.document_symbol.callback()),
             DocumentFormattingOptions::METHOD => Some(self.formatting.callback()),
+            RangeFormattingOptions::METHOD => Some(self.range_formatting.callback()),
             _ => None
         }
     }
@@ -151,7 +155,8 @@ impl<T> Default for TextDocumentService<T> {
             references: ReferenceOptions::endpoint(),
             document_highlight: DocumentHighlightOptions::endpoint(),
             document_symbol: DocumentSymbolOptions::endpoint(),
-            formatting: DocumentFormattingOptions::endpoint()
+            formatting: DocumentFormattingOptions::endpoint(),
+            range_formatting: RangeFormattingOptions::endpoint()
         }
     }
 }
