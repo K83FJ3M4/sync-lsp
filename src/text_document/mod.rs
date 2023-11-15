@@ -5,6 +5,7 @@ use self::document_highlight::DocumentHighlightOptions;
 use self::document_symbol::DocumentSymbolOptions;
 use self::formatting::DocumentFormattingOptions;
 use self::hover::HoverOptions;
+use self::on_type_formatting::DocumentOnTypeFormattingOptions;
 use self::publish_diagnostics::PublishDiagnosticsOptions;
 use self::range_formatting::RangeFormattingOptions;
 use self::references::ReferenceOptions;
@@ -28,6 +29,7 @@ pub mod document_highlight;
 mod document_symbol;
 pub mod formatting;
 mod range_formatting;
+pub mod on_type_formatting;
 
 pub type DocumentUri = String;
 
@@ -92,7 +94,8 @@ pub(super) struct TextDocumentService<T: 'static> {
     document_highlight: Endpoint<T, DocumentHighlightOptions>,
     document_symbol: Endpoint<T, DocumentSymbolOptions>,
     formatting: Endpoint<T, DocumentFormattingOptions>,
-    range_formatting: Endpoint<T, RangeFormattingOptions>
+    range_formatting: Endpoint<T, RangeFormattingOptions>,
+    pub(super) on_type_formatting: Endpoint<T, DocumentOnTypeFormattingOptions>
 }
 
 #[repr(i32)]
@@ -132,6 +135,7 @@ impl<T> TextDocumentService<T> {
             DocumentSymbolOptions::METHOD => Some(self.document_symbol.callback()),
             DocumentFormattingOptions::METHOD => Some(self.formatting.callback()),
             RangeFormattingOptions::METHOD => Some(self.range_formatting.callback()),
+            DocumentOnTypeFormattingOptions::METHOD => Some(self.on_type_formatting.callback()),
             _ => None
         }
     }
@@ -156,7 +160,8 @@ impl<T> Default for TextDocumentService<T> {
             document_highlight: DocumentHighlightOptions::endpoint(),
             document_symbol: DocumentSymbolOptions::endpoint(),
             formatting: DocumentFormattingOptions::endpoint(),
-            range_formatting: RangeFormattingOptions::endpoint()
+            range_formatting: RangeFormattingOptions::endpoint(),
+            on_type_formatting: DocumentOnTypeFormattingOptions::endpoint()
         }
     }
 }

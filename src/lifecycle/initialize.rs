@@ -5,10 +5,9 @@ use crate::Connection;
 use crate::connection::Callback;
 use crate::text_document::TextDocumentSyncOptions;
 use crate::text_document::completion::CompletionOptions;
+use crate::text_document::on_type_formatting::DocumentOnTypeFormattingOptions;
 use crate::text_document::signature_help::SignatureHelpOptions;
 use crate::workspace::execute_command::ExecuteCommandOptions;
-
-//use crate::text_document::{TextDocumentClientCapabilities, TextDocumentSyncKind};
 
 pub(crate) struct Initialize<T: 'static>
     (pub(crate) fn(&mut Connection<T>, params: InitializeParams) -> InitializeResult);
@@ -59,8 +58,8 @@ pub(crate) struct ServerCapabilities {
     //pub code_lens_provider: Option<CodeLensOptions>,
     pub document_formatting_provider: bool,
     pub document_range_formatting_provider: bool,
-   // #[serde(skip_serializing_if = "Option::is_none")]
-    //pub document_on_type_formatting_provider: Option<DocumentOnTypeFormattingOptions>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub document_on_type_formatting_provider: Option<DocumentOnTypeFormattingOptions>,
     pub rename_provider: bool,
     //#[serde(skip_serializing_if = "Option::is_none")]
     //pub document_link_provider: Option<DocumentLinkOptions>,
