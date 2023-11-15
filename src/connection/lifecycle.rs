@@ -34,6 +34,7 @@ fn initialize<T>(connection: &mut Connection<T>, params: InitializeParams) -> In
                 save: connection.text_document.did_save.options()
             }),
             completion_provider: Some(connection.text_document.completion.options()),
+            execute_command_provider: Some(connection.workspace.execute_command.options()),
             hover_provider: false,
             definition_provider: false,
             references_provider: false,

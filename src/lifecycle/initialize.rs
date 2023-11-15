@@ -5,6 +5,7 @@ use crate::Connection;
 use crate::connection::Callback;
 use crate::text_document::TextDocumentSyncOptions;
 use crate::text_document::completion::CompletionOptions;
+use crate::workspace::execute_command::ExecuteCommandOptions;
 
 //use crate::text_document::{TextDocumentClientCapabilities, TextDocumentSyncKind};
 
@@ -62,8 +63,8 @@ pub(crate) struct ServerCapabilities {
     pub rename_provider: bool,
     //#[serde(skip_serializing_if = "Option::is_none")]
     //pub document_link_provider: Option<DocumentLinkOptions>,
-    //#[serde(skip_serializing_if = "Option::is_none")]
-    //pub execute_command_provider: Option<ExecuteCommandOptions>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub execute_command_provider: Option<ExecuteCommandOptions>,
 }
 #[derive(Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase", default)]
