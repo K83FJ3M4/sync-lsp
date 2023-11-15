@@ -5,6 +5,7 @@ use crate::Connection;
 use crate::connection::Callback;
 use crate::text_document::TextDocumentSyncOptions;
 use crate::text_document::completion::CompletionOptions;
+use crate::text_document::signature_help::SignatureHelpOptions;
 use crate::workspace::execute_command::ExecuteCommandOptions;
 
 //use crate::text_document::{TextDocumentClientCapabilities, TextDocumentSyncKind};
@@ -46,8 +47,8 @@ pub(crate) struct ServerCapabilities {
     pub hover_provider: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub completion_provider: Option<CompletionOptions>,
-    //#[serde(skip_serializing_if = "Option::is_none")]
-    //pub signature_help_provider: Option<SignatureHelpOptions>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub signature_help_provider: Option<SignatureHelpOptions>,
     pub definition_provider: bool,
     pub references_provider: bool,
     pub document_highlight_provider: bool,

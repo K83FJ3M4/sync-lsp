@@ -1,8 +1,7 @@
 use crate::{Connection, connection::Endpoint};
 use crate::connection::Callback;
-use serde::{Deserialize, Serialize};
-use super::will_save::TextDocumentSaveReason;
-use super::{TextDocumentIdentifer, TextEdit, TextDocumentPositionParams, Range, Position};
+use serde::Serialize;
+use super::{TextDocumentIdentifer, TextDocumentPositionParams, Range, Position};
 
 #[derive(Default, Clone)]
 pub(crate) struct HoverOptions;

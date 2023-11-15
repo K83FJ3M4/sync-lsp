@@ -35,6 +35,7 @@ fn initialize<T>(connection: &mut Connection<T>, params: InitializeParams) -> In
             }),
             completion_provider: Some(connection.text_document.completion.options()),
             execute_command_provider: Some(connection.workspace.execute_command.options()),
+            signature_help_provider: Some(connection.text_document.signature_help.options()),
             hover_provider: true,
             definition_provider: false,
             references_provider: false,

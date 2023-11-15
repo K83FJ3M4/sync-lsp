@@ -3,6 +3,7 @@ use crate::{connection::Callback, Connection};
 use self::completion::{CompletionOptions, ResolveCompletionOptions};
 use self::hover::HoverOptions;
 use self::publish_diagnostics::PublishDiagnosticsOptions;
+use self::signature_help::SignatureHelpOptions;
 use self::{did_open::DidOpenOptions, did_change::DidChangeOptions, will_save::WillSaveOptions, will_save_wait_until::WillSaveWaitUntilOptions, did_save::DidSaveOptions, did_close::DidCloseOptions};
 use serde::{Serialize, Deserialize};
 use serde_repr::Serialize_repr;
@@ -16,6 +17,7 @@ mod did_close;
 pub mod publish_diagnostics;
 pub mod completion;
 pub mod hover;
+pub mod signature_help;
 
 pub type DocumentUri = String;
 
@@ -74,7 +76,8 @@ pub(super) struct TextDocumentService<T: 'static> {
     publish_diagnostics: PublishDiagnosticsOptions,
     pub(super) completion: Endpoint<T, CompletionOptions>,
     resolve_completion: Endpoint<T, ResolveCompletionOptions>,
-    hover: Endpoint<T, HoverOptions>
+    hover: Endpoint<T, HoverOptions>,
+    pub(super) signature_help: Endpoint<T, SignatureHelpOptions>
 }
 
 #[repr(i32)]
@@ -108,6 +111,7 @@ impl<T> TextDocumentService<T> {
             CompletionOptions::METHOD => Some(self.completion.callback()),
             ResolveCompletionOptions::METHOD => Some(self.resolve_completion.callback()),
             HoverOptions::METHOD => Some(self.hover.callback()),
+            SignatureHelpOptions::METHOD => Some(self.signature_help.callback()),
             _ => None
         }
     }
@@ -126,7 +130,8 @@ impl<T> Default for TextDocumentService<T> {
             publish_diagnostics: Default::default(),
             completion: CompletionOptions::endpoint(),
             resolve_completion: ResolveCompletionOptions::endpoint(),
-            hover: HoverOptions::endpoint()
+            hover: HoverOptions::endpoint(),
+            signature_help: SignatureHelpOptions::endpoint()
         }
     }
 }
