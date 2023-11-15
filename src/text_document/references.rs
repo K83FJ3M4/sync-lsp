@@ -17,7 +17,7 @@ struct ReferenceParams {
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ReferenceContext {
-    include_declaration: bool
+    pub include_declaration: bool
 }
 
 impl ReferenceOptions {

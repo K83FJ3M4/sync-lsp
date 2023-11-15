@@ -39,7 +39,7 @@ fn initialize<T>(connection: &mut Connection<T>, params: InitializeParams) -> In
             hover_provider: true,
             definition_provider: false,
             references_provider: true,
-            document_highlight_provider: false,
+            document_highlight_provider: true,
             document_symbol_provider: false,
             workspace_symbol_provider: true,
             code_action_provider: false,

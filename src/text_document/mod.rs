@@ -1,6 +1,7 @@
 use crate::connection::Endpoint;
 use crate::{connection::Callback, Connection};
 use self::completion::{CompletionOptions, ResolveCompletionOptions};
+use self::document_highlight::DocumentHighlightOptions;
 use self::hover::HoverOptions;
 use self::publish_diagnostics::PublishDiagnosticsOptions;
 use self::references::ReferenceOptions;
@@ -20,6 +21,7 @@ pub mod completion;
 pub mod hover;
 pub mod signature_help;
 pub mod references;
+pub mod document_highlight;
 
 pub type DocumentUri = String;
 
@@ -80,7 +82,8 @@ pub(super) struct TextDocumentService<T: 'static> {
     resolve_completion: Endpoint<T, ResolveCompletionOptions>,
     hover: Endpoint<T, HoverOptions>,
     pub(super) signature_help: Endpoint<T, SignatureHelpOptions>,
-    references: Endpoint<T, ReferenceOptions>
+    references: Endpoint<T, ReferenceOptions>,
+    document_highlight: Endpoint<T, DocumentHighlightOptions>
 }
 
 #[repr(i32)]
@@ -116,6 +119,7 @@ impl<T> TextDocumentService<T> {
             HoverOptions::METHOD => Some(self.hover.callback()),
             SignatureHelpOptions::METHOD => Some(self.signature_help.callback()),
             ReferenceOptions::METHOD => Some(self.references.callback()),
+            DocumentHighlightOptions::METHOD => Some(self.document_highlight.callback()),
             _ => None
         }
     }
@@ -136,7 +140,8 @@ impl<T> Default for TextDocumentService<T> {
             resolve_completion: ResolveCompletionOptions::endpoint(),
             hover: HoverOptions::endpoint(),
             signature_help: SignatureHelpOptions::endpoint(),
-            references: ReferenceOptions::endpoint()
+            references: ReferenceOptions::endpoint(),
+            document_highlight: DocumentHighlightOptions::endpoint()
         }
     }
 }
