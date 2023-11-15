@@ -35,7 +35,7 @@ fn initialize<T>(connection: &mut Connection<T>, params: InitializeParams) -> In
             }),
             completion_provider: Some(connection.text_document.completion.options()),
             execute_command_provider: Some(connection.workspace.execute_command.options()),
-            hover_provider: false,
+            hover_provider: true,
             definition_provider: false,
             references_provider: false,
             document_highlight_provider: false,

@@ -1,6 +1,7 @@
 use crate::connection::Endpoint;
 use crate::{connection::Callback, Connection};
 use self::completion::{CompletionOptions, ResolveCompletionOptions};
+use self::hover::HoverOptions;
 use self::publish_diagnostics::PublishDiagnosticsOptions;
 use self::{did_open::DidOpenOptions, did_change::DidChangeOptions, will_save::WillSaveOptions, will_save_wait_until::WillSaveWaitUntilOptions, did_save::DidSaveOptions, did_close::DidCloseOptions};
 use serde::{Serialize, Deserialize};
@@ -14,6 +15,7 @@ mod did_save;
 mod did_close;
 pub mod publish_diagnostics;
 pub mod completion;
+pub mod hover;
 
 pub type DocumentUri = String;
 
@@ -71,7 +73,8 @@ pub(super) struct TextDocumentService<T: 'static> {
     #[allow(unused)]
     publish_diagnostics: PublishDiagnosticsOptions,
     pub(super) completion: Endpoint<T, CompletionOptions>,
-    resolve_completion: Endpoint<T, ResolveCompletionOptions>
+    resolve_completion: Endpoint<T, ResolveCompletionOptions>,
+    hover: Endpoint<T, HoverOptions>
 }
 
 #[repr(i32)]
@@ -104,6 +107,7 @@ impl<T> TextDocumentService<T> {
             DidCloseOptions::METHOD => Some(self.did_close.callback()),
             CompletionOptions::METHOD => Some(self.completion.callback()),
             ResolveCompletionOptions::METHOD => Some(self.resolve_completion.callback()),
+            HoverOptions::METHOD => Some(self.hover.callback()),
             _ => None
         }
     }
@@ -121,7 +125,8 @@ impl<T> Default for TextDocumentService<T> {
             did_close: DidCloseOptions::endpoint(),
             publish_diagnostics: Default::default(),
             completion: CompletionOptions::endpoint(),
-            resolve_completion: ResolveCompletionOptions::endpoint()
+            resolve_completion: ResolveCompletionOptions::endpoint(),
+            hover: HoverOptions::endpoint()
         }
     }
 }
