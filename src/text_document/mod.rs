@@ -3,6 +3,7 @@ use crate::{connection::Callback, Connection};
 use self::completion::{CompletionOptions, ResolveCompletionOptions};
 use self::document_highlight::DocumentHighlightOptions;
 use self::document_symbol::DocumentSymbolOptions;
+use self::formatting::DocumentFormattingOptions;
 use self::hover::HoverOptions;
 use self::publish_diagnostics::PublishDiagnosticsOptions;
 use self::references::ReferenceOptions;
@@ -24,6 +25,7 @@ pub mod signature_help;
 pub mod references;
 pub mod document_highlight;
 mod document_symbol;
+pub mod formatting;
 
 pub type DocumentUri = String;
 
@@ -86,7 +88,8 @@ pub(super) struct TextDocumentService<T: 'static> {
     pub(super) signature_help: Endpoint<T, SignatureHelpOptions>,
     references: Endpoint<T, ReferenceOptions>,
     document_highlight: Endpoint<T, DocumentHighlightOptions>,
-    document_symbol: Endpoint<T, DocumentSymbolOptions>
+    document_symbol: Endpoint<T, DocumentSymbolOptions>,
+    formatting: Endpoint<T, DocumentFormattingOptions>
 }
 
 #[repr(i32)]
@@ -124,6 +127,7 @@ impl<T> TextDocumentService<T> {
             ReferenceOptions::METHOD => Some(self.references.callback()),
             DocumentHighlightOptions::METHOD => Some(self.document_highlight.callback()),
             DocumentSymbolOptions::METHOD => Some(self.document_symbol.callback()),
+            DocumentFormattingOptions::METHOD => Some(self.formatting.callback()),
             _ => None
         }
     }
@@ -146,7 +150,8 @@ impl<T> Default for TextDocumentService<T> {
             signature_help: SignatureHelpOptions::endpoint(),
             references: ReferenceOptions::endpoint(),
             document_highlight: DocumentHighlightOptions::endpoint(),
-            document_symbol: DocumentSymbolOptions::endpoint()
+            document_symbol: DocumentSymbolOptions::endpoint(),
+            formatting: DocumentFormattingOptions::endpoint()
         }
     }
 }
