@@ -1,6 +1,7 @@
 use crate::connection::Endpoint;
 use crate::{connection::Callback, Connection};
 use self::completion::{CompletionOptions, ResolveCompletionOptions};
+use self::definition::DefinitionOptions;
 use self::document_highlight::DocumentHighlightOptions;
 use self::document_symbol::DocumentSymbolOptions;
 use self::formatting::DocumentFormattingOptions;
@@ -30,6 +31,7 @@ mod document_symbol;
 pub mod formatting;
 mod range_formatting;
 pub mod on_type_formatting;
+mod definition;
 
 pub type DocumentUri = String;
 
@@ -95,7 +97,8 @@ pub(super) struct TextDocumentService<T: 'static> {
     document_symbol: Endpoint<T, DocumentSymbolOptions>,
     formatting: Endpoint<T, DocumentFormattingOptions>,
     range_formatting: Endpoint<T, RangeFormattingOptions>,
-    pub(super) on_type_formatting: Endpoint<T, DocumentOnTypeFormattingOptions>
+    pub(super) on_type_formatting: Endpoint<T, DocumentOnTypeFormattingOptions>,
+    definition: Endpoint<T, DefinitionOptions>
 }
 
 #[repr(i32)]
@@ -136,6 +139,7 @@ impl<T> TextDocumentService<T> {
             DocumentFormattingOptions::METHOD => Some(self.formatting.callback()),
             RangeFormattingOptions::METHOD => Some(self.range_formatting.callback()),
             DocumentOnTypeFormattingOptions::METHOD => Some(self.on_type_formatting.callback()),
+            DefinitionOptions::METHOD => Some(self.definition.callback()),
             _ => None
         }
     }
@@ -161,7 +165,8 @@ impl<T> Default for TextDocumentService<T> {
             document_symbol: DocumentSymbolOptions::endpoint(),
             formatting: DocumentFormattingOptions::endpoint(),
             range_formatting: RangeFormattingOptions::endpoint(),
-            on_type_formatting: DocumentOnTypeFormattingOptions::endpoint()
+            on_type_formatting: DocumentOnTypeFormattingOptions::endpoint(),
+            definition: DefinitionOptions::endpoint()
         }
     }
 }
