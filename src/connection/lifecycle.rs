@@ -38,7 +38,7 @@ fn initialize<T>(connection: &mut Connection<T>, params: InitializeParams) -> In
             signature_help_provider: Some(connection.text_document.signature_help.options()),
             hover_provider: true,
             definition_provider: false,
-            references_provider: false,
+            references_provider: true,
             document_highlight_provider: false,
             document_symbol_provider: false,
             workspace_symbol_provider: true,
