@@ -6,6 +6,7 @@ use crate::connection::Callback;
 use crate::text_document::TextDocumentSyncOptions;
 use crate::text_document::code_lens::CodeLensOptions;
 use crate::text_document::completion::CompletionOptions;
+use crate::text_document::document_link::DocumentLinkOptions;
 use crate::text_document::on_type_formatting::DocumentOnTypeFormattingOptions;
 use crate::text_document::signature_help::SignatureHelpOptions;
 use crate::workspace::execute_command::ExecuteCommandOptions;
@@ -62,8 +63,8 @@ pub(crate) struct ServerCapabilities {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub document_on_type_formatting_provider: Option<DocumentOnTypeFormattingOptions>,
     pub rename_provider: bool,
-    //#[serde(skip_serializing_if = "Option::is_none")]
-    //pub document_link_provider: Option<DocumentLinkOptions>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub document_link_provider: Option<DocumentLinkOptions>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub execute_command_provider: Option<ExecuteCommandOptions>,
 }

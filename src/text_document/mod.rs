@@ -5,6 +5,7 @@ use self::code_lens::{CodeLensOptions, CodeLensResolveOptions};
 use self::completion::{CompletionOptions, ResolveCompletionOptions};
 use self::definition::DefinitionOptions;
 use self::document_highlight::DocumentHighlightOptions;
+use self::document_link::{DocumentLinkOptions, DocumentLinkResolveOptions};
 use self::document_symbol::DocumentSymbolOptions;
 use self::formatting::DocumentFormattingOptions;
 use self::hover::HoverOptions;
@@ -36,6 +37,7 @@ pub mod on_type_formatting;
 mod definition;
 pub mod code_action;
 pub mod code_lens;
+pub mod document_link;
 
 pub type DocumentUri = String;
 
@@ -105,7 +107,9 @@ pub(super) struct TextDocumentService<T: 'static> {
     definition: Endpoint<T, DefinitionOptions>,
     code_action: Endpoint<T, CodeActionOptions>,
     pub(super) code_lens: Endpoint<T, CodeLensOptions>,
-    resolve_code_lens: Endpoint<T, CodeLensResolveOptions>
+    resolve_code_lens: Endpoint<T, CodeLensResolveOptions>,
+    pub(super) document_link: Endpoint<T, DocumentLinkOptions>,
+    resolve_document_link: Endpoint<T, DocumentLinkResolveOptions>
 }
 
 #[repr(i32)]
@@ -150,6 +154,8 @@ impl<T> TextDocumentService<T> {
             CodeActionOptions::METHOD => Some(self.code_action.callback()),
             CodeLensOptions::METHOD => Some(self.code_lens.callback()),
             CodeLensResolveOptions::METHOD => Some(self.resolve_code_lens.callback()),
+            DocumentLinkOptions::METHOD => Some(self.document_link.callback()),
+            DocumentLinkResolveOptions::METHOD => Some(self.resolve_document_link.callback()),
             _ => None
         }
     }
@@ -179,7 +185,9 @@ impl<T> Default for TextDocumentService<T> {
             definition: DefinitionOptions::endpoint(),
             code_action: CodeActionOptions::endpoint(),
             code_lens: CodeLensOptions::endpoint(),
-            resolve_code_lens: CodeLensResolveOptions::endpoint()
+            resolve_code_lens: CodeLensResolveOptions::endpoint(),
+            document_link: DocumentLinkOptions::endpoint(),
+            resolve_document_link: DocumentLinkResolveOptions::endpoint()
         }
     }
 }
