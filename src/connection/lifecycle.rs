@@ -48,7 +48,7 @@ fn initialize<T>(connection: &mut Connection<T>, params: InitializeParams) -> In
             code_action_provider: true,
             document_formatting_provider: true,
             document_range_formatting_provider: true,
-            rename_provider: false
+            rename_provider: true
         }
     }
 }

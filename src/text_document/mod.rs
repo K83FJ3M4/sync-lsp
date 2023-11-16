@@ -13,6 +13,7 @@ use self::on_type_formatting::DocumentOnTypeFormattingOptions;
 use self::publish_diagnostics::PublishDiagnosticsOptions;
 use self::range_formatting::RangeFormattingOptions;
 use self::references::ReferenceOptions;
+use self::rename::RenameOptions;
 use self::signature_help::SignatureHelpOptions;
 use self::{did_open::DidOpenOptions, did_change::DidChangeOptions, will_save::WillSaveOptions, will_save_wait_until::WillSaveWaitUntilOptions, did_save::DidSaveOptions, did_close::DidCloseOptions};
 use serde::{Serialize, Deserialize};
@@ -38,6 +39,7 @@ mod definition;
 pub mod code_action;
 pub mod code_lens;
 pub mod document_link;
+mod rename;
 
 pub type DocumentUri = String;
 
@@ -109,7 +111,8 @@ pub(super) struct TextDocumentService<T: 'static> {
     pub(super) code_lens: Endpoint<T, CodeLensOptions>,
     resolve_code_lens: Endpoint<T, CodeLensResolveOptions>,
     pub(super) document_link: Endpoint<T, DocumentLinkOptions>,
-    resolve_document_link: Endpoint<T, DocumentLinkResolveOptions>
+    resolve_document_link: Endpoint<T, DocumentLinkResolveOptions>,
+    pub(super) rename: Endpoint<T, RenameOptions>
 }
 
 #[repr(i32)]
@@ -156,6 +159,7 @@ impl<T> TextDocumentService<T> {
             CodeLensResolveOptions::METHOD => Some(self.resolve_code_lens.callback()),
             DocumentLinkOptions::METHOD => Some(self.document_link.callback()),
             DocumentLinkResolveOptions::METHOD => Some(self.resolve_document_link.callback()),
+            RenameOptions::METHOD => Some(self.rename.callback()),
             _ => None
         }
     }
@@ -187,7 +191,8 @@ impl<T> Default for TextDocumentService<T> {
             code_lens: CodeLensOptions::endpoint(),
             resolve_code_lens: CodeLensResolveOptions::endpoint(),
             document_link: DocumentLinkOptions::endpoint(),
-            resolve_document_link: DocumentLinkResolveOptions::endpoint()
+            resolve_document_link: DocumentLinkResolveOptions::endpoint(),
+            rename: RenameOptions::endpoint()
         }
     }
 }

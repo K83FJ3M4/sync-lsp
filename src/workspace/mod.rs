@@ -6,6 +6,7 @@ mod did_change_configuration;
 mod did_change_watched_files;
 pub mod symbol;
 pub mod execute_command;
+pub mod apply_edit;
 
 pub(crate) struct WorkspaceService<T: 'static> {
     did_change_configuration: Endpoint<T, DidChangeConfigurationOptions>,
