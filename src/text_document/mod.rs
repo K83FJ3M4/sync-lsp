@@ -1,6 +1,7 @@
 use crate::connection::Endpoint;
 use crate::{connection::Callback, Connection};
 use self::code_action::CodeActionOptions;
+use self::code_lens::{CodeLensOptions, CodeLensResolveOptions};
 use self::completion::{CompletionOptions, ResolveCompletionOptions};
 use self::definition::DefinitionOptions;
 use self::document_highlight::DocumentHighlightOptions;
@@ -34,6 +35,7 @@ mod range_formatting;
 pub mod on_type_formatting;
 mod definition;
 pub mod code_action;
+pub mod code_lens;
 
 pub type DocumentUri = String;
 
@@ -101,7 +103,9 @@ pub(super) struct TextDocumentService<T: 'static> {
     range_formatting: Endpoint<T, RangeFormattingOptions>,
     pub(super) on_type_formatting: Endpoint<T, DocumentOnTypeFormattingOptions>,
     definition: Endpoint<T, DefinitionOptions>,
-    code_action: Endpoint<T, CodeActionOptions>
+    code_action: Endpoint<T, CodeActionOptions>,
+    pub(super) code_lens: Endpoint<T, CodeLensOptions>,
+    resolve_code_lens: Endpoint<T, CodeLensResolveOptions>
 }
 
 #[repr(i32)]
@@ -144,6 +148,8 @@ impl<T> TextDocumentService<T> {
             DocumentOnTypeFormattingOptions::METHOD => Some(self.on_type_formatting.callback()),
             DefinitionOptions::METHOD => Some(self.definition.callback()),
             CodeActionOptions::METHOD => Some(self.code_action.callback()),
+            CodeLensOptions::METHOD => Some(self.code_lens.callback()),
+            CodeLensResolveOptions::METHOD => Some(self.resolve_code_lens.callback()),
             _ => None
         }
     }
@@ -171,7 +177,9 @@ impl<T> Default for TextDocumentService<T> {
             range_formatting: RangeFormattingOptions::endpoint(),
             on_type_formatting: DocumentOnTypeFormattingOptions::endpoint(),
             definition: DefinitionOptions::endpoint(),
-            code_action: CodeActionOptions::endpoint()
+            code_action: CodeActionOptions::endpoint(),
+            code_lens: CodeLensOptions::endpoint(),
+            resolve_code_lens: CodeLensResolveOptions::endpoint()
         }
     }
 }

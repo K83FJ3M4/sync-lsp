@@ -4,6 +4,7 @@ use serde_json::Value;
 use crate::Connection;
 use crate::connection::Callback;
 use crate::text_document::TextDocumentSyncOptions;
+use crate::text_document::code_lens::CodeLensOptions;
 use crate::text_document::completion::CompletionOptions;
 use crate::text_document::on_type_formatting::DocumentOnTypeFormattingOptions;
 use crate::text_document::signature_help::SignatureHelpOptions;
@@ -54,8 +55,8 @@ pub(crate) struct ServerCapabilities {
     pub document_symbol_provider: bool,
     pub workspace_symbol_provider: bool,
     pub code_action_provider: bool,
-    //#[serde(skip_serializing_if = "Option::is_none")]
-    //pub code_lens_provider: Option<CodeLensOptions>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub code_lens_provider: Option<CodeLensOptions>,
     pub document_formatting_provider: bool,
     pub document_range_formatting_provider: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
