@@ -1,5 +1,5 @@
-use serde::Serialize;
-use serde_repr::Serialize_repr;
+use serde::{Serialize, Deserialize};
+use serde_repr::{Serialize_repr, Deserialize_repr};
 
 use crate::Connection;
 use crate::connection::RpcConnection;
@@ -9,7 +9,7 @@ use super::{DocumentUri, Range};
 #[derive(Default, Clone)]
 pub(super) struct PublishDiagnosticsOptions;
 
-#[derive(Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct Diagnostic {
     pub range: Range,
     pub severity: Option<DiagnosticSeverity>,
@@ -19,7 +19,7 @@ pub struct Diagnostic {
 }
 
 #[repr(i32)]
-#[derive(Serialize_repr, Debug)]
+#[derive(Deserialize_repr, Serialize_repr, Debug)]
 pub enum DiagnosticSeverity {
     Error = 1,
     Warning = 2,

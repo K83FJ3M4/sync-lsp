@@ -9,6 +9,7 @@ pub(crate) struct HoverOptions;
 #[derive(Serialize, Debug, Default)]
 pub struct Hover {
     pub contents: Vec<MarkedString>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub range: Option<Range>
 }
 
