@@ -1,7 +1,7 @@
 use crate::workspace::apply_edit::WorkspaceEdit;
 use crate::{Connection, connection::Endpoint};
 use crate::connection::Callback;
-use super::{TextDocumentIdentifer, TextDocumentPositionParams, Location, Position};
+use super::{TextDocumentIdentifer, Position};
 use serde::Deserialize;
 
 #[derive(Default, Clone)]
