@@ -1,3 +1,4 @@
+use crate::TypeProvider;
 use crate::{Connection, connection::Endpoint};
 use crate::connection::Callback;
 use super::{TextDocumentIdentifer, Position, Location};
@@ -24,12 +25,12 @@ impl ReferenceOptions {
 
     pub(crate) const METHOD: &'static str = "textDocument/references";
     
-    pub(super) fn endpoint<T>() -> Endpoint<T, ReferenceOptions> {
+    pub(super) fn endpoint<T: TypeProvider>() -> Endpoint<T, ReferenceOptions> {
         Endpoint::new(Callback::request(|_, _: ReferenceParams| Vec::<Location>::new()))
     }
 }
 
-impl<T> Connection<T> {
+impl<T: TypeProvider> Connection<T> {
     pub fn on_references(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer, Position, context: ReferenceContext) -> Vec<Location>) {
         self.text_document.references.set_callback(Callback::request(move |connection, params: ReferenceParams| {
             callback(connection, params.text_document, params.position, params.context)

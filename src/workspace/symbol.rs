@@ -1,3 +1,4 @@
+use crate::TypeProvider;
 use crate::text_document::Location;
 use crate::{Connection, connection::Endpoint};
 use crate::connection::Callback;
@@ -49,12 +50,12 @@ impl SymbolOptions {
 
     pub(crate) const METHOD: &'static str = "workspace/symbol";
     
-    pub(super) fn endpoint<T>() -> Endpoint<T, SymbolOptions> {
+    pub(super) fn endpoint<T: TypeProvider>() -> Endpoint<T, SymbolOptions> {
         Endpoint::new(Callback::request(|_, _: WorkspaceSymbolParams| Vec::<SymbolInformation>::new()))
     }
 }
 
-impl<T> Connection<T> {
+impl<T: TypeProvider> Connection<T> {
     pub fn on_symbol(&mut self, callback: fn(&mut Connection<T>, String) -> Vec<SymbolInformation>) {
         self.workspace.symbol.set_callback(Callback::request(move |connection, params: WorkspaceSymbolParams| {
             callback(connection, params.query)

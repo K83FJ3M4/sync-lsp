@@ -1,5 +1,5 @@
 use serde::Serialize;
-use crate::Connection;
+use crate::{Connection, TypeProvider};
 use crate::connection::RpcConnection;
 
 use super::MessageType;
@@ -14,7 +14,7 @@ struct ShowMessageParams {
     message: String,
 }
 
-impl<T> Connection<T> {
+impl<T: TypeProvider> Connection<T> {
     pub fn show_message(&mut self, r#type: MessageType, message: String) {
         self.notify(
             ShowMessage::METHOD, 

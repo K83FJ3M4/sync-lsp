@@ -1,3 +1,4 @@
+use crate::TypeProvider;
 use crate::connection::Endpoint;
 use crate::{connection::Callback, Connection};
 use self::code_action::CodeActionOptions;
@@ -86,7 +87,7 @@ pub struct VersionedTextDocumentIdentifier {
     pub version: i32,
 }
 
-pub(super) struct TextDocumentService<T: 'static> {
+pub(super) struct TextDocumentService<T: TypeProvider> {
     pub(super) sync_kind: TextDocumentSyncKind,
     did_open: Endpoint<T, DidOpenOptions>,
     did_change: Endpoint<T, DidChangeOptions>,
@@ -134,7 +135,7 @@ pub(crate) struct TextDocumentSyncOptions {
     pub save: DidSaveOptions
 }
 
-impl<T> TextDocumentService<T> {
+impl<T: TypeProvider> TextDocumentService<T> {
     pub(super) fn resolve(&self, method: &str) -> Option<Callback<Connection<T>>> {
         match method {
             DidOpenOptions::METHOD => Some(self.did_open.callback()),
@@ -165,7 +166,7 @@ impl<T> TextDocumentService<T> {
     }
 }
 
-impl<T> Default for TextDocumentService<T> {
+impl<T: TypeProvider> Default for TextDocumentService<T> {
     fn default() -> Self {
         TextDocumentService {
             sync_kind: Default::default(),
@@ -197,7 +198,7 @@ impl<T> Default for TextDocumentService<T> {
     }
 }
 
-impl<T> Connection<T> {
+impl<T: TypeProvider> Connection<T> {
     pub fn set_document_sync(&mut self, sync_kind: TextDocumentSyncKind) {
         self.text_document.sync_kind = sync_kind;
     }

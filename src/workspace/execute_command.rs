@@ -1,6 +1,6 @@
+use crate::TypeProvider;
 use crate::{Connection, connection::Endpoint};
 use crate::connection::Callback;
-use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_json::Value;
 
@@ -13,14 +13,14 @@ impl ExecuteCommandOptions {
 
     pub(crate) const METHOD: &'static str = "workspace/executeCommand";
     
-    pub(super) fn endpoint<T>() -> Endpoint<T, ExecuteCommandOptions> {
+    pub(super) fn endpoint<T: TypeProvider>() -> Endpoint<T, ExecuteCommandOptions> {
         Endpoint::new(Callback::request(|_, _: Value| ()))
     }
 }
 
-impl<T> Connection<T> {
-    pub fn on_execute_command<C: 'static + DeserializeOwned, R: 'static + Serialize>(&mut self, callback: fn(&mut Connection<T>, C) -> R) {
-        self.workspace.execute_command.set_callback(Callback::request(move |connection, params: C| {
+impl<T: TypeProvider> Connection<T> {
+    pub fn on_execute_command<R: 'static + Serialize>(&mut self, callback: fn(&mut Connection<T>, T::Command) -> R) {
+        self.workspace.execute_command.set_callback(Callback::request(move |connection, params| {
             callback(connection, params)
         }))
     }

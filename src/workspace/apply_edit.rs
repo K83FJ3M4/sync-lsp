@@ -2,14 +2,14 @@ use std::collections::HashMap;
 use crate::text_document::{DocumentUri, TextEdit};
 use serde::{Serialize, Deserialize};
 use crate::connection::{RpcConnection, Callback};
-use crate::Connection;
+use crate::{Connection, TypeProvider};
 
 #[derive(Serialize, Debug, Default)]
 pub struct WorkspaceEdit {
     pub changes: HashMap<DocumentUri, Vec<TextEdit>>
 }
 
-pub(super) struct ApplyWorkspaceRequest<T: 'static> {
+pub(super) struct ApplyWorkspaceRequest<T: TypeProvider> {
     callback: Callback<Connection<T>>
 }
 
@@ -23,7 +23,7 @@ pub struct ApplyWorkspaceEditResponse {
     pub applied: bool
 }
 
-impl<T> Connection<T> {
+impl<T: TypeProvider> Connection<T> {
     pub fn apply_edit(&mut self, tag: &str, edit: WorkspaceEdit) {
         self.request(
             ApplyWorkspaceRequest::<T>::METHOD,
@@ -37,7 +37,7 @@ impl<T> Connection<T> {
     }
 }
 
-impl<T> Default for ApplyWorkspaceRequest<T> {
+impl<T: TypeProvider> Default for ApplyWorkspaceRequest<T> {
     fn default() -> Self {
         Self {
             callback: Callback::response(|_, _, _: ApplyWorkspaceEditResponse| ())
@@ -45,7 +45,7 @@ impl<T> Default for ApplyWorkspaceRequest<T> {
     }
 }
 
-impl<T> ApplyWorkspaceRequest<T> {
+impl<T: TypeProvider> ApplyWorkspaceRequest<T> {
     pub(super) const METHOD: &'static str = "workspace/applyEdit";
 
     pub(crate) fn callback(&self) -> Callback<Connection<T>> {

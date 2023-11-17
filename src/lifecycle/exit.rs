@@ -1,10 +1,10 @@
-use crate::Connection;
+use crate::{Connection, TypeProvider};
 use crate::connection::Callback;
 
-pub(crate) struct Exit<T: 'static>
+pub(crate) struct Exit<T: TypeProvider>
     (pub(crate) fn(&mut Connection<T>));
 
-impl<T> Exit<T> {
+impl<T: TypeProvider> Exit<T> {
 
     pub(crate) const METHOD: &'static str = "exit";
     

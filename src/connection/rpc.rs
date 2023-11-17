@@ -1,12 +1,12 @@
-use crate::Connection;
+use crate::{Connection, TypeProvider};
 use super::jsonrpc::{RpcConnection, Callback, RpcError};
 
-pub(crate) struct Endpoint<T: 'static, O: Clone + Default> {
+pub(crate) struct Endpoint<T: TypeProvider, O: Clone + Default> {
     callback: Callback<Connection<T>>,
     options: O
 }
 
-impl<T> RpcConnection for Connection<T> {
+impl<T: TypeProvider> RpcConnection for Connection<T> {
     fn transport(&mut self) -> &mut crate::Transport {
         &mut self.transport
     }
@@ -23,7 +23,7 @@ impl<T> RpcConnection for Connection<T> {
     }
 }
 
-impl<T: 'static, O: Clone + Default> Endpoint<T, O> {
+impl<T: TypeProvider, O: Clone + Default> Endpoint<T, O> {
     pub(crate) fn new(callback: Callback<Connection<T>>,) -> Self {
         Endpoint {
             callback,

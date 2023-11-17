@@ -1,3 +1,4 @@
+use crate::TypeProvider;
 use crate::{Connection, connection::Endpoint};
 use crate::connection::Callback;
 use super::{TextDocumentIdentifer, TextEdit};
@@ -26,12 +27,12 @@ impl DocumentFormattingOptions {
 
     pub(crate) const METHOD: &'static str = "textDocument/formatting";
     
-    pub(super) fn endpoint<T>() -> Endpoint<T, DocumentFormattingOptions> {
+    pub(super) fn endpoint<T: TypeProvider>() -> Endpoint<T, DocumentFormattingOptions> {
         Endpoint::new(Callback::request(|_, _: DocumentFormattingParams| Vec::<TextEdit>::new()))
     }
 }
 
-impl<T> Connection<T> {
+impl<T: TypeProvider> Connection<T> {
     pub fn on_formatting(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer, FormattingOptions) -> Vec<TextEdit>) {
         self.text_document.formatting.set_callback(Callback::request(move |connection, params: DocumentFormattingParams | {
             callback(connection, params.text_document, params.options)

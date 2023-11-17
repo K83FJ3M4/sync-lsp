@@ -1,7 +1,7 @@
 use serde::{Serialize, Deserialize};
 use serde_repr::{Serialize_repr, Deserialize_repr};
 
-use crate::Connection;
+use crate::{Connection, TypeProvider};
 use crate::connection::RpcConnection;
 
 use super::{DocumentUri, Range};
@@ -37,7 +37,7 @@ impl PublishDiagnosticsOptions {
     const METHOD: &'static str = "textDocument/publishDiagnostics";
 }
 
-impl<T> Connection<T> {
+impl<T: TypeProvider> Connection<T> {
     pub fn publish_diagnostics(&mut self, uri: DocumentUri, diagnostics: Vec<Diagnostic>) {
         self.notify(
             PublishDiagnosticsOptions::METHOD,

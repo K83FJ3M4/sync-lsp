@@ -1,4 +1,4 @@
-use crate::Connection;
+use crate::{Connection, TypeProvider};
 use crate::connection::{Callback, Endpoint};
 use serde::Deserialize;
 use super::TextDocumentIdentifer;
@@ -17,14 +17,14 @@ impl DidCloseOptions {
 
     pub(crate) const METHOD: &'static str = "textDocument/didClose";
 
-    pub(crate) fn endpoint<T>() -> Endpoint<T, DidCloseOptions> {
+    pub(crate) fn endpoint<T: TypeProvider>() -> Endpoint<T, DidCloseOptions> {
         Endpoint::new(Callback::notification(|_, _: DidCloseTextDocumentParams| {
 
         }))
     }
 }
 
-impl<T> Connection<T> {
+impl<T: TypeProvider> Connection<T> {
     pub fn on_did_close(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer)) {
         self.text_document.did_close.set_callback(Callback::notification(move |connection, params: DidCloseTextDocumentParams| {
             callback(connection, params.text_document)

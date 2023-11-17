@@ -1,8 +1,7 @@
+use crate::TypeProvider;
 use crate::{Connection, connection::Endpoint};
 use crate::connection::Callback;
-use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use super::{TextDocumentIdentifer, Range};
 
 #[derive(Serialize, Clone)]
@@ -31,30 +30,29 @@ pub struct CodeLens<C, V> {
 impl CodeLensOptions {
     pub(crate) const METHOD: &'static str = "textDocument/codeLens";
     
-    pub(super) fn endpoint<T>() -> Endpoint<T, CodeLensOptions> {
-        Endpoint::new(Callback::request(|_, _: CodeLensParams| Vec::<()>::new()))
+    pub(super) fn endpoint<T: TypeProvider>() -> Endpoint<T, CodeLensOptions> {
+        Endpoint::new(Callback::request(|_, _: CodeLensParams| Vec::<CodeLens<T::Command, T::CodeLensData>>::new()))
     }
 }
 
 impl CodeLensResolveOptions {
     pub(crate) const METHOD: &'static str = "codeLens/resolve";
         
-    pub(super) fn endpoint<T>() -> Endpoint<T, CodeLensResolveOptions> {
-        Endpoint::new(Callback::request(|_, lens: CodeLens<Value, Value>| lens))
+    pub(super) fn endpoint<T: TypeProvider>() -> Endpoint<T, CodeLensResolveOptions> {
+        Endpoint::new(Callback::request(|_, lens: CodeLens<T::Command, T::CodeLensData>| lens))
     }
 }
 
-impl<T> Connection<T> {
-    pub fn on_code_lens<C: 'static + Serialize + DeserializeOwned, V: 'static + Serialize + DeserializeOwned>(
-            &mut self,
-            callback: fn(&mut Connection<T>, TextDocumentIdentifer) -> Vec<CodeLens<C, V>>,
-            resolve: fn(&mut Connection<T>, CodeLens<C, V>) -> CodeLens<C, V>
-        ) {
+impl<T: TypeProvider> Connection<T> {
+    pub fn on_code_lens(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer) -> Vec<CodeLens<T::Command, T::CodeLensData>>) {
         self.text_document.code_lens.set_callback(Callback::request(move |connection, params: CodeLensParams| {
             callback(connection, params.text_document)
         }));
+    }
+
+    pub fn on_code_lens_resolve(&mut self, callback: fn(&mut Connection<T>, CodeLens<T::Command, T::CodeLensData>) -> CodeLens<T::Command, T::CodeLensData>) {
         self.text_document.resolve_code_lens.set_callback(Callback::request(move |connection, params| {
-            resolve(connection, params)
+            callback(connection, params)
         }));
     }
 }

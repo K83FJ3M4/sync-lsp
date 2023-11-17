@@ -1,14 +1,12 @@
-use log::error;
 use std::io::Error;
 use std::ops::{Deref, DerefMut};
-use serde::de::DeserializeOwned;
-use serde_json::{Value, from_value};
 use jsonrpc::RpcError;
 
 pub use transport::Transport;
 pub(crate) use jsonrpc::{Callback, ErrorCode, EmptyParams, RpcConnection};
 pub(crate) use rpc::Endpoint;
 
+use crate::TypeProvider;
 use crate::lifecycle::LifecycleService;
 use crate::text_document::TextDocumentService;
 use crate::window::WindowService;
@@ -21,20 +19,20 @@ mod jsonrpc;
 mod transport;
 mod lifecycle;
 
-pub struct Connection<T: 'static> {
+pub struct Connection<T: TypeProvider> {
     state: T,
     transport: Transport,
     error: Option<RpcError>,
     process_id: Option<u32>,
     root_uri: Option<String>,
-    initialization_options: Option<Value>,
+    initialization_options: Option<T::InitializeOptions>,
     lifecycle: LifecycleService<T>,
     pub(crate) window: WindowService<T>,
     pub(crate) text_document: TextDocumentService<T>,
     pub(crate) workspace: WorkspaceService<T>
 }
 
-impl<T> Connection<T> {
+impl<T: TypeProvider> Connection<T> {
     pub fn new(state: T, transport: Transport) -> Connection<T> {
         Connection {
             state,
@@ -70,19 +68,12 @@ impl<T> Connection<T> {
         self.root_uri.as_ref().map(|uri| uri.as_str())
     }
 
-    pub fn initialization_options<O: DeserializeOwned>(&self) -> Option<O> {
-        let Some(options) = self.initialization_options.as_ref() else { return None };
-        match from_value(options.clone()) {
-            Ok(options) => Some(options),
-            Err(error) => {
-                error!("Failed to deserialize initialization options: {}", error);
-                None
-            }
-        }
+    pub fn initialization_options(&self) -> Option<&T::InitializeOptions> {
+        self.initialization_options.as_ref()
     }
 }
 
-impl<T> Deref for Connection<T> {
+impl<T: TypeProvider> Deref for Connection<T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -90,7 +81,7 @@ impl<T> Deref for Connection<T> {
     }
 }
 
-impl<T> DerefMut for Connection<T> {
+impl<T: TypeProvider> DerefMut for Connection<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.state
     }

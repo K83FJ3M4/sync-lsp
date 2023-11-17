@@ -1,6 +1,6 @@
 use serde_repr::Serialize_repr;
 
-use crate::Connection;
+use crate::{Connection, TypeProvider};
 use crate::connection::Callback;
 
 use self::log_message::LogMessage;
@@ -13,7 +13,7 @@ mod log_message;
 mod telemetry;
 pub mod show_message_request;
 
-pub(super) struct WindowService<T: 'static> {
+pub(super) struct WindowService<T: TypeProvider> {
     #[allow(unused)]
     show_message: ShowMessage,
     show_message_request: ShowMessageRequest<T>,
@@ -32,7 +32,7 @@ pub enum MessageType {
     Log = 4,
 }
 
-impl<T> WindowService<T> {
+impl<T: TypeProvider> WindowService<T> {
     pub(super) fn resolve(&self, method: &str) -> Option<Callback<Connection<T>>> {
         match method {
             ShowMessageRequest::<T>::METHOD => Some(self.show_message_request.callback()),
@@ -41,7 +41,7 @@ impl<T> WindowService<T> {
     }
 }
 
-impl<T> Default for WindowService<T> {
+impl<T: TypeProvider> Default for WindowService<T> {
     fn default() -> Self {
         Self {
             show_message: ShowMessage::default(),

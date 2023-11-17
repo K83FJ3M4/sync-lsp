@@ -1,3 +1,4 @@
+use crate::TypeProvider;
 use crate::{Connection, connection::Endpoint};
 use crate::connection::Callback;
 use serde::{Deserialize, Serialize};
@@ -29,7 +30,7 @@ pub struct DocumentLink {
 impl DocumentLinkOptions {
     pub(crate) const METHOD: &'static str = "textDocument/documentLink";
     
-    pub(super) fn endpoint<T>() -> Endpoint<T, DocumentLinkOptions> {
+    pub(super) fn endpoint<T: TypeProvider>() -> Endpoint<T, DocumentLinkOptions> {
         Endpoint::new(Callback::request(|_, _: DocumentLinkParams| Vec::<DocumentLink>::new()))
     }
 }
@@ -37,22 +38,21 @@ impl DocumentLinkOptions {
 impl DocumentLinkResolveOptions {
     pub(crate) const METHOD: &'static str = "documentLink/resolve";
         
-    pub(super) fn endpoint<T>() -> Endpoint<T, DocumentLinkResolveOptions> {
+    pub(super) fn endpoint<T: TypeProvider>() -> Endpoint<T, DocumentLinkResolveOptions> {
         Endpoint::new(Callback::request(|_, lens: DocumentLink| lens))
     }
 }
 
-impl<T> Connection<T> {
-    pub fn on_document_link(
-            &mut self,
-            callback: fn(&mut Connection<T>, TextDocumentIdentifer) -> Vec<DocumentLink>,
-            resolve: fn(&mut Connection<T>, DocumentLink) -> DocumentLink
-        ) {
+impl<T: TypeProvider> Connection<T> {
+    pub fn on_document_link(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer) -> Vec<DocumentLink>) {
         self.text_document.document_link.set_callback(Callback::request(move |connection, params: DocumentLinkParams| {
             callback(connection, params.text_document)
         }));
+    }
+
+    pub fn on_document_link_resolve(&mut self, callback: fn(&mut Connection<T>, DocumentLink) -> DocumentLink) {
         self.text_document.resolve_document_link.set_callback(Callback::request(move |connection, params| {
-            resolve(connection, params)
+            callback(connection, params)
         }));
     }
 }

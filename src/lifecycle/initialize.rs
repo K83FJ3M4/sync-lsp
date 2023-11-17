@@ -1,7 +1,6 @@
 use serde::{Serialize, Deserialize};
 use serde_json::Value;
-
-use crate::Connection;
+use crate::{Connection, TypeProvider};
 use crate::connection::Callback;
 use crate::text_document::TextDocumentSyncOptions;
 use crate::text_document::code_lens::CodeLensOptions;
@@ -11,7 +10,7 @@ use crate::text_document::on_type_formatting::DocumentOnTypeFormattingOptions;
 use crate::text_document::signature_help::SignatureHelpOptions;
 use crate::workspace::execute_command::ExecuteCommandOptions;
 
-pub(crate) struct Initialize<T: 'static>
+pub(crate) struct Initialize<T: TypeProvider>
     (pub(crate) fn(&mut Connection<T>, params: InitializeParams) -> InitializeResult);
 
 #[derive(Debug, Deserialize)]
@@ -74,7 +73,7 @@ pub(crate) struct DynamicRegistration {
     pub(crate) dynamic_registration: bool,
 }
 
-impl<T> Initialize<T> {
+impl<T: TypeProvider> Initialize<T> {
 
     pub(crate) const METHOD: &'static str = "initialize";
 

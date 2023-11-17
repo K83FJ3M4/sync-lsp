@@ -1,10 +1,10 @@
 use serde::{Serialize, Deserialize};
-use crate::Connection;
+use crate::{Connection, TypeProvider};
 use crate::connection::{RpcConnection, Callback};
 
 use super::MessageType;
 
-pub(super) struct ShowMessageRequest<T: 'static>
+pub(super) struct ShowMessageRequest<T: TypeProvider>
     (fn(&mut Connection<T>, String, Option<MessageActionItem>));
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -21,7 +21,7 @@ struct ShowMessageRequestParams {
     actions: Vec<MessageActionItem>
 }
 
-impl<T> Connection<T> {
+impl<T: TypeProvider> Connection<T> {
     pub fn show_message_request(&mut self, tag: &str, r#type: MessageType, message: String, actions: Vec<MessageActionItem>) {
         self.request(
             ShowMessageRequest::<T>::METHOD,
@@ -39,13 +39,13 @@ impl<T> Connection<T> {
     }
 }
 
-impl<T> Default for ShowMessageRequest<T> {
+impl<T: TypeProvider> Default for ShowMessageRequest<T> {
     fn default() -> Self {
         Self(|_, _, _| {})
     }
 }
 
-impl<T> ShowMessageRequest<T> {
+impl<T: TypeProvider> ShowMessageRequest<T> {
     pub(super) const METHOD: &'static str = "window/showMessageRequest";
 
     pub(crate) fn callback(&self) -> Callback<Connection<T>> {

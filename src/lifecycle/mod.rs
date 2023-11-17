@@ -1,4 +1,4 @@
-use crate::Connection;
+use crate::{Connection, TypeProvider};
 use crate::connection::Callback;
 
 pub(super) use self::exit::Exit;
@@ -11,14 +11,14 @@ mod initialized;
 mod shutdown;
 mod exit;
 
-pub(super) struct LifecycleService<T: 'static> {
+pub(super) struct LifecycleService<T: TypeProvider> {
     pub(super) initialize: Initialize<T>,
     pub(super) initialized: Initialized<T>,
     pub(super) shutdown: Shutdown<T>,
     pub(super) exit: Exit<T>
 }
 
-impl<T> LifecycleService<T> {
+impl<T: TypeProvider> LifecycleService<T> {
     pub(super) fn resolve(&self, method: &str) -> Option<Callback<Connection<T>>> {
         match method {
             Initialize::<T>::METHOD => Some(self.initialize.callback()),

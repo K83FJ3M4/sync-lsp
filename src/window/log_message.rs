@@ -1,5 +1,5 @@
 use serde::Serialize;
-use crate::Connection;
+use crate::{Connection, TypeProvider};
 use crate::connection::RpcConnection;
 
 use super::MessageType;
@@ -14,7 +14,7 @@ struct LogMessageParams {
     message: String,
 }
 
-impl<T> Connection<T> {
+impl<T: TypeProvider> Connection<T> {
     pub fn log_message(&mut self, r#type: MessageType, message: String) {
         self.notify(
             LogMessage::METHOD,

@@ -1,4 +1,4 @@
-use crate::{connection::{Callback, Endpoint}, Connection};
+use crate::{connection::{Callback, Endpoint}, Connection, TypeProvider};
 
 use self::{did_change_configuration::DidChangeConfigurationOptions, did_change_watched_files::DidChangeWatchedFilesOptions, symbol::SymbolOptions, execute_command::ExecuteCommandOptions, apply_edit::ApplyWorkspaceRequest};
 
@@ -8,7 +8,7 @@ pub mod symbol;
 pub mod execute_command;
 pub mod apply_edit;
 
-pub(crate) struct WorkspaceService<T: 'static> {
+pub(crate) struct WorkspaceService<T: TypeProvider> {
     did_change_configuration: Endpoint<T, DidChangeConfigurationOptions>,
     #[allow(unused)]
     did_change_watched_files: DidChangeWatchedFilesOptions,
@@ -17,7 +17,7 @@ pub(crate) struct WorkspaceService<T: 'static> {
     apply_edit: ApplyWorkspaceRequest<T>
 }
 
-impl<T> WorkspaceService<T> {
+impl<T: TypeProvider> WorkspaceService<T> {
     pub(super) fn resolve(&self, method: &str) -> Option<Callback<Connection<T>>> {
         match method {
             DidChangeConfigurationOptions::METHOD => Some(self.did_change_configuration.callback()),
@@ -29,7 +29,7 @@ impl<T> WorkspaceService<T> {
     }
 }
 
-impl<T: 'static> Default for WorkspaceService<T> {
+impl<T: TypeProvider> Default for WorkspaceService<T> {
     fn default() -> Self {
         WorkspaceService {
             did_change_configuration: DidChangeConfigurationOptions::endpoint(),

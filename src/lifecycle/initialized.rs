@@ -1,10 +1,10 @@
-use crate::Connection;
+use crate::{Connection, TypeProvider};
 use crate::connection::{Callback, EmptyParams};
 
-pub(crate) struct Initialized<T: 'static>
+pub(crate) struct Initialized<T: TypeProvider>
     (pub(crate) fn(&mut Connection<T>));
 
-impl<T> Initialized<T> {
+impl<T: TypeProvider> Initialized<T> {
 
     pub(crate) const METHOD: &'static str = "initialized";
     

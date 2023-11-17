@@ -1,6 +1,6 @@
 use serde_repr::Serialize_repr;
 use serde::Serialize;
-use crate::Connection;
+use crate::{Connection, TypeProvider};
 use crate::connection::RpcConnection;
 
 #[derive(Default)]
@@ -26,7 +26,7 @@ struct DidChangeWatchedFilesParams {
     changes: Vec<FileEvent>
 }
 
-impl<T> Connection<T> {
+impl<T: TypeProvider> Connection<T> {
     pub fn did_change_watched_files(&mut self, changes: Vec<FileEvent>) {
         self.notify(
             DidChangeWatchedFilesOptions::METHOD,

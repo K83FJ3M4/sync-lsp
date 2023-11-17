@@ -1,4 +1,4 @@
-use crate::Connection;
+use crate::{Connection, TypeProvider};
 use crate::connection::{Callback, Endpoint};
 use serde::Deserialize;
 use super::DocumentUri;
@@ -25,12 +25,12 @@ impl DidOpenOptions {
 
     pub(crate) const METHOD: &'static str = "textDocument/didOpen";
     
-    pub(super) fn endpoint<T>() -> Endpoint<T, DidOpenOptions> {
+    pub(super) fn endpoint<T: TypeProvider>() -> Endpoint<T, DidOpenOptions> {
         Endpoint::new(Callback::notification(|_, _: DidOpenParams| ()))
     }
 }
 
-impl<T> Connection<T> {
+impl<T: TypeProvider> Connection<T> {
     pub fn on_did_open(&mut self, callback: fn(&mut Connection<T>, TextDocumentItem)) {
         self.text_document.did_open.set_callback(Callback::notification(move |connection, params: DidOpenParams| {
             callback(connection, params.text_document)

@@ -1,10 +1,12 @@
-use crate::Connection;
+use crate::{Connection, TypeProvider};
 use crate::lifecycle::initialize::{InitializeParams, InitializeResult, ServerCapabilities};
 use crate::lifecycle::{LifecycleService, Initialized, Initialize, Shutdown, Exit};
 use crate::text_document::TextDocumentSyncOptions;
 use super::ErrorCode;
+use serde_json::from_value;
+use log::error;
 
-impl<T> Default for LifecycleService<T> {
+impl<T: TypeProvider> Default for LifecycleService<T> {
     fn default() -> Self {
         Self {
             initialize: Initialize(initialize),
@@ -15,11 +17,20 @@ impl<T> Default for LifecycleService<T> {
     }
 }
 
-fn initialize<T>(connection: &mut Connection<T>, params: InitializeParams) -> InitializeResult {
+fn initialize(connection: &mut Connection<impl TypeProvider>, params: InitializeParams) -> InitializeResult {
     connection.lifecycle.initialize = Initialize(initialize_error);
     connection.lifecycle.initialized = Initialized(initialized);
 
-    connection.initialization_options = params.initialization_options;
+    if let Some(options) = params.initialization_options {
+        connection.initialization_options = match from_value(options) {
+            Ok(options) => Some(options),
+            Err(error) => {
+                error!("Failed to deserialize initialization options: {}", error);
+                None
+            }
+        };
+    };
+    
     connection.process_id = params.process_id;
     connection.root_uri = params.root_uri
         .or(params.root_path);
@@ -53,42 +64,42 @@ fn initialize<T>(connection: &mut Connection<T>, params: InitializeParams) -> In
     }
 }
 
-fn initialized<T>(connection: &mut Connection<T>) {
+fn initialized(connection: &mut Connection<impl TypeProvider>) {
     connection.lifecycle.initialized = Initialized(initialized_error);
     connection.lifecycle.shutdown = Shutdown(shutdown);
 }
 
-fn shutdown<T>(connection: &mut Connection<T>) {
+fn shutdown(connection: &mut Connection<impl TypeProvider>) {
     connection.lifecycle.shutdown = Shutdown(shutdown_error);
     connection.lifecycle.exit = Exit(exit);
 }
 
-fn exit<T>(connection: &mut Connection<T>) {
+fn exit(connection: &mut Connection<impl TypeProvider>) {
     connection.lifecycle.exit = Exit(exit_error);
 }
 
-fn initialize_error<T>(connection: &mut Connection<T>, _: InitializeParams) -> InitializeResult {
+fn initialize_error(connection: &mut Connection<impl TypeProvider>, _: InitializeParams) -> InitializeResult {
     connection.error(
         ErrorCode::InvalidRequest,
         "Server has already been initialized".to_string()
     )
 }
 
-fn initialized_error<T>(connection: &mut Connection<T>) {
+fn initialized_error(connection: &mut Connection<impl TypeProvider>) {
     connection.error::<()>(
         ErrorCode::InvalidRequest,
         "Only an uninitialized server may be initialized".to_string()
     );
 }
 
-fn shutdown_error<T>(connection: &mut Connection<T>) {
+fn shutdown_error(connection: &mut Connection<impl TypeProvider>) {
     connection.error::<()>(
         ErrorCode::ServerNotInitialized,
         "Only an initialized server may be shut down".to_string()
     );
 }
 
-fn exit_error<T>(connection: &mut Connection<T>) {
+fn exit_error(connection: &mut Connection<impl TypeProvider>) {
     connection.error::<()>(
         ErrorCode::InvalidRequest,
         "Only a shut down server may be exited".to_string()

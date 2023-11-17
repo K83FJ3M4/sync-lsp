@@ -1,4 +1,4 @@
-use crate::Connection;
+use crate::{Connection, TypeProvider};
 use crate::connection::{Callback, Endpoint};
 use serde::Deserialize;
 use super::TextDocumentIdentifer;
@@ -22,12 +22,12 @@ impl DidSaveOptions {
 
     pub(crate) const METHOD: &'static str = "textDocument/didSave";
     
-    pub(super) fn endpoint<T>() -> Endpoint<T, DidSaveOptions> {
+    pub(super) fn endpoint<T: TypeProvider>() -> Endpoint<T, DidSaveOptions> {
         Endpoint::new(Callback::notification(|_, _: DidSaveTextDocumentParams| ()))
     }
 }
 
-impl<T> Connection<T> {
+impl<T: TypeProvider> Connection<T> {
     pub fn on_did_save(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer, Option<String>)) {
         self.text_document.did_save.set_callback(Callback::notification(move |connection, params: DidSaveTextDocumentParams| {
             callback(connection, params.text_document, params.text)

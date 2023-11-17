@@ -1,8 +1,6 @@
-use crate::Connection;
+use crate::{Connection, TypeProvider};
 use crate::connection::{Callback, Endpoint};
-use serde::de::DeserializeOwned;
 use serde::{Serialize, Deserialize};
-use serde_json::Value;
 use serde_repr::{Serialize_repr, Deserialize_repr};
 use super::{TextDocumentIdentifer, TextDocumentPositionParams, Position, TextEdit};
 
@@ -17,7 +15,7 @@ pub(crate) struct CompletionOptions {
 #[derive(Clone, Default)]
 pub(crate) struct ResolveCompletionOptions;
 
-#[derive(Serialize, Debug, Default)]
+#[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct CompletionList<T> {
     pub is_incomplete: bool,
@@ -95,30 +93,29 @@ pub struct CompletionItem<T = ()> {
 impl CompletionOptions {
     pub(crate) const METHOD: &'static str = "textDocument/completion";
     
-    pub(super) fn endpoint<T>() -> Endpoint<T, CompletionOptions> {
-        Endpoint::new(Callback::request(|_, _: TextDocumentPositionParams| CompletionList::<()>::default()))
+    pub(super) fn endpoint<T: TypeProvider>() -> Endpoint<T, CompletionOptions> {
+        Endpoint::new(Callback::request(|_, _: TextDocumentPositionParams| CompletionList::<T::CompletionData>::default()))
     }
 }
 
 impl ResolveCompletionOptions {
     pub(crate) const METHOD: &'static str = "completionItem/resolve";
 
-    pub(super) fn endpoint<T>() -> Endpoint<T, ResolveCompletionOptions> {
-        Endpoint::new(Callback::request(|_, item: CompletionItem<Value>| item))
+    pub(super) fn endpoint<T: TypeProvider>() -> Endpoint<T, ResolveCompletionOptions> {
+        Endpoint::new(Callback::request(|_, item: CompletionItem<T::CompletionData>| item))
     }
 }
 
-impl<T> Connection<T> {
-    pub fn on_completion<D: 'static + Serialize + DeserializeOwned>(&mut self,
-        callback: fn(&mut Connection<T>, TextDocumentIdentifer, Position) -> CompletionList<D>,
-        resolve: fn(&mut Connection<T>, CompletionItem<D>) -> CompletionItem<D>)
-    {
+impl<T: TypeProvider> Connection<T> {
+    pub fn on_completion(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer, Position) -> CompletionList<T::CompletionData>) {
         self.text_document.completion.set_callback(Callback::request(move |connection, params: TextDocumentPositionParams| {
             callback(connection, params.text_document, params.position)
         }));
+    }
 
-        self.text_document.resolve_completion.set_callback(Callback::request(move |connection, item: CompletionItem<D>| {
-            resolve(connection, item)
+    pub fn on_completion_resolve(&mut self, callback: fn(&mut Connection<T>, CompletionItem<T::CompletionData>) -> CompletionItem<T::CompletionData>) {
+        self.text_document.resolve_completion.set_callback(Callback::request(move |connection, item| {
+            callback(connection, item)
         }));
     }
 
@@ -132,6 +129,16 @@ impl Default for CompletionOptions {
         CompletionOptions {
             resolve_provider: true,
             trigger_characters: Vec::new()
+        }
+    }
+}
+
+
+impl<T> Default for CompletionList<T> {
+    fn default() -> Self {
+        CompletionList {
+            is_incomplete: false,
+            items: Vec::new()
         }
     }
 }

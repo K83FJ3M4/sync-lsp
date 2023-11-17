@@ -1,10 +1,10 @@
-use crate::Connection;
+use crate::{Connection, TypeProvider};
 use crate::connection::Callback;
 
-pub(crate) struct Shutdown<T: 'static>
+pub(crate) struct Shutdown<T: TypeProvider>
     (pub(crate) fn(&mut Connection<T>));
 
-impl<T> Shutdown<T> {
+impl<T: TypeProvider> Shutdown<T> {
 
     pub(crate) const METHOD: &'static str = "shutdown";
     

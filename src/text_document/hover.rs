@@ -1,3 +1,4 @@
+use crate::TypeProvider;
 use crate::{Connection, connection::Endpoint};
 use crate::connection::Callback;
 use serde::Serialize;
@@ -27,12 +28,12 @@ impl HoverOptions {
 
     pub(crate) const METHOD: &'static str = "textDocument/hover";
     
-    pub(super) fn endpoint<T>() -> Endpoint<T, HoverOptions> {
+    pub(super) fn endpoint<T: TypeProvider>() -> Endpoint<T, HoverOptions> {
         Endpoint::new(Callback::request(|_, _: TextDocumentPositionParams| Hover::default()))
     }
 }
 
-impl<T> Connection<T> {
+impl<T: TypeProvider> Connection<T> {
     pub fn on_hover(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer, Position) -> Hover) {
         self.text_document.hover.set_callback(Callback::request(move |connection, params: TextDocumentPositionParams| {
             callback(connection, params.text_document, params.position)
