@@ -31,10 +31,6 @@ impl<T: 'static, O: Clone + Default> Endpoint<T, O> {
         }
     }
 
-    pub(crate) fn set_options(&mut self, options: O) {
-        self.options = options;
-    }
-
     pub(crate) fn options_mut(&mut self) -> &mut O {
         &mut self.options
     }
