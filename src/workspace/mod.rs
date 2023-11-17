@@ -1,6 +1,6 @@
 use crate::{connection::{Callback, Endpoint}, Connection};
 
-use self::{did_change_configuration::DidChangeConfigurationOptions, did_change_watched_files::DidChangeWatchedFilesOptions, symbol::SymbolOptions, execute_command::ExecuteCommandOptions};
+use self::{did_change_configuration::DidChangeConfigurationOptions, did_change_watched_files::DidChangeWatchedFilesOptions, symbol::SymbolOptions, execute_command::ExecuteCommandOptions, apply_edit::ApplyWorkspaceRequest};
 
 mod did_change_configuration;
 mod did_change_watched_files;
@@ -13,7 +13,8 @@ pub(crate) struct WorkspaceService<T: 'static> {
     #[allow(unused)]
     did_change_watched_files: DidChangeWatchedFilesOptions,
     symbol: Endpoint<T, SymbolOptions>,
-    pub(crate) execute_command: Endpoint<T, ExecuteCommandOptions>
+    pub(crate) execute_command: Endpoint<T, ExecuteCommandOptions>,
+    apply_edit: ApplyWorkspaceRequest<T>
 }
 
 impl<T> WorkspaceService<T> {
@@ -22,6 +23,7 @@ impl<T> WorkspaceService<T> {
             DidChangeConfigurationOptions::METHOD => Some(self.did_change_configuration.callback()),
             SymbolOptions::METHOD => Some(self.symbol.callback()),
             ExecuteCommandOptions::METHOD => Some(self.execute_command.callback()),
+            ApplyWorkspaceRequest::<T>::METHOD => Some(self.apply_edit.callback()),
             _ => None
         }
     }
@@ -33,7 +35,8 @@ impl<T: 'static> Default for WorkspaceService<T> {
             did_change_configuration: DidChangeConfigurationOptions::endpoint(),
             did_change_watched_files: DidChangeWatchedFilesOptions::default(),
             symbol: SymbolOptions::endpoint(),
-            execute_command: ExecuteCommandOptions::endpoint()
+            execute_command: ExecuteCommandOptions::endpoint(),
+            apply_edit: ApplyWorkspaceRequest::default()
         }
     }
 }
