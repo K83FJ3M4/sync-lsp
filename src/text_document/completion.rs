@@ -6,12 +6,12 @@ use serde_json::Value;
 use serde_repr::{Serialize_repr, Deserialize_repr};
 use super::{TextDocumentIdentifer, TextDocumentPositionParams, Position, TextEdit};
 
-#[derive(Serialize, Clone, Debug, Default)]
+#[derive(Serialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct CompletionOptions {
-    pub resolve_provider: bool,
+pub(crate) struct CompletionOptions {
+    resolve_provider: bool,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub trigger_characters: Vec<String>
+    trigger_characters: Vec<String>
 }
 
 #[derive(Clone, Default)]
@@ -109,10 +109,6 @@ impl ResolveCompletionOptions {
 }
 
 impl<T> Connection<T> {
-    pub fn set_completion_options(&mut self, completion: CompletionOptions) {
-        self.text_document.completion.set_options(completion)
-    }
-
     pub fn on_completion<D: 'static + Serialize + DeserializeOwned>(&mut self,
         callback: fn(&mut Connection<T>, TextDocumentIdentifer, Position) -> CompletionList<D>,
         resolve: fn(&mut Connection<T>, CompletionItem<D>) -> CompletionItem<D>)
@@ -124,5 +120,18 @@ impl<T> Connection<T> {
         self.text_document.resolve_completion.set_callback(Callback::request(move |connection, item: CompletionItem<D>| {
             resolve(connection, item)
         }));
+    }
+
+    pub fn set_completion_trigger_character(&mut self, trigger_characters: Vec<String>) {
+        self.text_document.completion.options_mut().trigger_characters = trigger_characters;
+    }
+}
+
+impl Default for CompletionOptions {
+    fn default() -> Self {
+        CompletionOptions {
+            resolve_provider: true,
+            trigger_characters: Vec::new()
+        }
     }
 }

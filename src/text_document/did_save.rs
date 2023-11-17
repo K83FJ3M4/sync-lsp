@@ -6,8 +6,8 @@ use serde::Serialize;
 
 #[derive(Serialize, Default, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct DidSaveOptions {
-    pub include_text: bool
+pub(crate) struct DidSaveOptions {
+    include_text: bool
 }
 
 #[derive(Deserialize)]
@@ -34,7 +34,7 @@ impl<T> Connection<T> {
         }))
     }
 
-    pub fn set_save_options(&mut self, save_options: DidSaveOptions) {
-        self.text_document.did_save.set_options(save_options);
+    pub fn set_on_save_include_text(&mut self, value: bool) {
+        self.text_document.did_save.options_mut().include_text = value;
     }
 }

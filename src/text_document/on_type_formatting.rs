@@ -6,10 +6,10 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Default, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct DocumentOnTypeFormattingOptions {
-    pub first_trigger_character: String,
+pub(crate) struct DocumentOnTypeFormattingOptions {
+    first_trigger_character: String,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub more_trigger_character: Vec<String>
+    more_trigger_character: Vec<String>
 }
 
 #[derive(Deserialize)]
@@ -36,8 +36,12 @@ impl<T> Connection<T> {
             callback(connection, params.text_document, params.position, params.ch, params.options)
         }))
     }
+    
+    pub fn set_on_type_formatting_first_trigger_character(&mut self, value: String) {
+        self.text_document.on_type_formatting.options_mut().first_trigger_character = value;
+    }
 
-    pub fn set_on_type_formatting_options(&mut self, options: DocumentOnTypeFormattingOptions) {
-        self.text_document.on_type_formatting.set_options(options)
+    pub fn set_on_type_formatting_more_trigger_characters(&mut self, value: Vec<String>) {
+        self.text_document.on_type_formatting.options_mut().more_trigger_character = value;
     }
 }

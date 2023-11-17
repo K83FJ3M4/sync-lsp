@@ -5,10 +5,10 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use super::{TextDocumentIdentifer, Range};
 
-#[derive(Serialize, Default, Clone)]
+#[derive(Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct CodeLensOptions {
-    pub resolve_provider: bool
+pub(crate) struct CodeLensOptions {
+    resolve_provider: bool
 }
 
 #[derive(Clone, Default)]
@@ -57,8 +57,12 @@ impl<T> Connection<T> {
             resolve(connection, params)
         }));
     }
+}
 
-    pub fn set_code_lens_options(&mut self, options: CodeLensOptions) {
-        self.text_document.code_lens.set_options(options);
+impl Default for CodeLensOptions {
+    fn default() -> Self {
+        CodeLensOptions {
+            resolve_provider: true
+        }
     }
 }

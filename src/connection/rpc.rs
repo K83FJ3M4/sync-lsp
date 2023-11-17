@@ -35,6 +35,10 @@ impl<T: 'static, O: Clone + Default> Endpoint<T, O> {
         self.options = options;
     }
 
+    pub(crate) fn options_mut(&mut self) -> &mut O {
+        &mut self.options
+    }
+
     pub(crate) fn set_callback(&mut self, callback: Callback<Connection<T>>) {
         self.callback = callback;
     }

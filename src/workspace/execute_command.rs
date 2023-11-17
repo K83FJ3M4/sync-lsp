@@ -5,8 +5,8 @@ use serde::Serialize;
 use serde_json::Value;
 
 #[derive(Serialize, Default, Clone)]
-pub struct ExecuteCommandOptions {
-    pub commands: Vec<String>
+pub(crate) struct ExecuteCommandOptions {
+    commands: Vec<String>
 }
 
 impl ExecuteCommandOptions {
@@ -25,7 +25,7 @@ impl<T> Connection<T> {
         }))
     }
 
-    pub fn set_execute_command_options(&mut self, execute_command_options: ExecuteCommandOptions) {
-        self.workspace.execute_command.set_options(execute_command_options);
+    pub fn set_commands(&mut self, commands: Vec<String>) {
+        self.workspace.execute_command.options_mut().commands = commands;
     }
 }

@@ -5,8 +5,8 @@ use super::{TextDocumentIdentifer, TextDocumentPositionParams, Position};
 
 #[derive(Serialize, Default, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct SignatureHelpOptions {
-    pub trigger_characters: Vec<String>
+pub(crate) struct SignatureHelpOptions {
+    trigger_characters: Vec<String>
 }
 
 #[derive(Serialize, Debug, Default)]
@@ -46,7 +46,7 @@ impl<T> Connection<T> {
         }))
     }
 
-    pub fn set_signature_help_options(&mut self, options: SignatureHelpOptions) {
-        self.text_document.signature_help.set_options(options)
+    pub fn set_signature_help_trigger_characters(&mut self, value: Vec<String>) {
+        self.text_document.signature_help.options_mut().trigger_characters = value;
     }
 }

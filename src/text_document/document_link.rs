@@ -3,10 +3,10 @@ use crate::connection::Callback;
 use serde::{Deserialize, Serialize};
 use super::{TextDocumentIdentifer, Range, DocumentUri};
 
-#[derive(Serialize, Default, Clone)]
+#[derive(Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct DocumentLinkOptions {
-    pub resolve_provider: bool
+pub(crate) struct DocumentLinkOptions {
+    resolve_provider: bool
 }
 
 #[derive(Serialize, Clone, Default)]
@@ -55,8 +55,12 @@ impl<T> Connection<T> {
             resolve(connection, params)
         }));
     }
+}
 
-    pub fn set_document_link_options(&mut self, options: DocumentLinkOptions) {
-        self.text_document.document_link.set_options(options)
+impl Default for DocumentLinkOptions {
+    fn default() -> Self {
+        Self {
+            resolve_provider: false
+        }
     }
 }
