@@ -1,3 +1,6 @@
+use log::Level;
+
+use crate::window::MessageType;
 use crate::{Connection, TypeProvider};
 use super::jsonrpc::{RpcConnection, Callback, RpcError};
 
@@ -13,6 +16,18 @@ impl<T: TypeProvider> RpcConnection for Connection<T> {
 
     fn take_error(&mut self) -> Option<RpcError> {
         self.error.take()
+    }
+
+    fn log(&mut self, level: Level, message: String) {
+        let r#type = match level {
+            Level::Error => MessageType::Error,
+            Level::Warn => MessageType::Warning,
+            Level::Info => MessageType::Info,
+            Level::Debug => MessageType::Log,
+            Level::Trace => MessageType::Log
+        };
+
+        self.log_message(r#type, message)
     }
 
     fn resolve(&self, method: &str) -> Option<Callback<Self>> {

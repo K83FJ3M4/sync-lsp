@@ -16,5 +16,4 @@ pub trait TypeProvider: 'static {
     type CompletionData: Serialize + DeserializeOwned + Debug;
     type Configuration: DeserializeOwned;
     type InitializeOptions: DeserializeOwned;
-    //MessageActionRequest
 }

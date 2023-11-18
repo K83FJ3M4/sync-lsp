@@ -1,11 +1,13 @@
 use std::rc::Rc;
 
 use crate::Transport;
+use log::{Level, Log, Metadata, Record};
 use serde_json::{Value, Error as JsonError, from_value, to_value};
 use serde::{Serialize, de::DeserializeOwned};
 pub(super) use message::Error as RpcError;
 pub(crate) use message::EmptyParams;
 pub use message::ErrorCode;
+use std::sync::mpsc::Sender;
 
 mod message;
 
@@ -13,6 +15,7 @@ pub(crate) trait RpcConnection: Sized + 'static {
     fn transport(&mut self) -> &mut Transport;
     fn resolve(&self, method: &str) -> Option<Callback<Self>>;
     fn take_error(&mut self) -> Option<RpcError>;
+    fn log(&mut self, level: Level, message: String);
 
     fn notify(&mut self, method: &str, params: impl Serialize)
         { RpcConnectionImpl::notify(self, method, params) }
@@ -24,6 +27,24 @@ pub(crate) enum Callback<T: RpcConnection> {
     Request(Rc<dyn Fn(&mut T, Value) -> Result<Value, JsonError>>),
     Notification(Rc<dyn Fn(&mut T, Value) -> Result<(), JsonError>>),
     Response(Rc<dyn Fn(&mut T, String, Option<Value>) -> Result<(), JsonError>>),
+}
+
+struct RpcLogger {
+    sender: Sender<(Level, String)>
+}
+
+impl Log for RpcLogger {
+    fn enabled(&self, _: &Metadata) -> bool {
+        true
+    }
+
+    fn log(&self, record: &Record) {
+        if self.enabled(record.metadata()) {
+            self.sender.send((record.level(), record.args().to_string())).ok();
+        }
+    }
+
+    fn flush(&self) {}
 }
 
 impl<T: RpcConnection> Clone for Callback<T> {
@@ -66,18 +87,37 @@ impl<T: RpcConnection> Callback<T> {
 
 #[allow(non_snake_case)]
 pub(super) mod RpcConnectionImpl {
-    use log::error;
+    use log::{error, set_boxed_logger, set_max_level, LevelFilter};
     use serde_json::{Value, from_slice, to_string, to_value};
-    use std::io::Error;
+    use std::io::{Error, ErrorKind};
+    use std::sync::mpsc::channel;
     use serde::Serialize;
     use crate::connection::jsonrpc::message::{Message, MessageID, Version, Error as RpcError};
 
     use super::message::ErrorCode;
-    use super::{RpcConnection, Callback};
+    use super::{RpcConnection, Callback, RpcLogger};
 
     pub(crate) fn serve(mut connection: impl RpcConnection) -> Result<(), Error> {
+
+        let (sender, receiver) = channel();
+        let logger = RpcLogger {
+            sender
+        };
+        
+        if let Err(error) = set_boxed_logger(Box::new(logger)) {
+            return Err(Error::new(ErrorKind::Other, error.to_string()));
+        }
+
+        #[cfg(debug_assertions)]
+        set_max_level(LevelFilter::Trace);
+        #[cfg(not(debug_assertions))]
+        set_max_level(LevelFilter::Info);
+
         while let Some(message) = recv(&mut connection) {
-            handle(&mut connection, message)
+            handle(&mut connection, message);
+            while let Ok((level, message)) = receiver.try_recv() {
+                connection.log(level, message);
+            }
         }
 
         if let Some(error) = connection.transport().error().take() {
