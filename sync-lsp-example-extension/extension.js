@@ -6,7 +6,7 @@ let client;
 
 module.exports = {
     activate() {
-        let server_exe = path.resolve(__dirname, '..', 'target', 'debug', 'sync-lsp-example.exe');
+        let server_exe = path.resolve(__dirname, '..', 'target', 'debug', 'sync-lsp-example');
     
         const executable    = { command: server_exe, args: [], transport: TransportKind.stdio  };
         const serverOptions = { run: executable, debug: executable };
