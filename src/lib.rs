@@ -1,6 +1,8 @@
 pub use connection::{Transport, Connection};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
+use workspace::execute_command::Command;
+use std::fmt::Debug;
 
 mod connection;
 mod lifecycle;
@@ -9,9 +11,9 @@ pub mod window;
 pub mod workspace;
 
 pub trait TypeProvider: 'static {
-    type Command: Serialize + DeserializeOwned;
+    type Command: Command;
     type CodeLensData: Serialize + DeserializeOwned;
-    type CompletionData: Serialize + DeserializeOwned;
+    type CompletionData: Serialize + DeserializeOwned + Debug;
     type Configuration: DeserializeOwned;
     type InitializeOptions: DeserializeOwned;
     //MessageActionRequest

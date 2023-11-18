@@ -17,7 +17,8 @@ pub(crate) struct ResolveCompletionOptions;
 
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct CompletionList<T> {
+#[serde(bound = "")]
+pub struct CompletionList<T: TypeProvider> {
     pub is_incomplete: bool,
     pub items: Vec<CompletionItem<T>>,
 }
@@ -54,7 +55,7 @@ pub enum InsertTextFormat {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct CompletionItem<T = ()> {
+pub struct CompletionItem<T: TypeProvider> {
     pub label: String,
     #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -83,18 +84,17 @@ pub struct CompletionItem<T = ()> {
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub additional_text_edits: Vec<TextEdit>,
-    //TODO set to Command
     #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub command: Option<String>,
-    pub data: T
+    pub command: Option<T::Command>,
+    pub data: T::CompletionData
 }
 
 impl CompletionOptions {
     pub(crate) const METHOD: &'static str = "textDocument/completion";
     
     pub(super) fn endpoint<T: TypeProvider>() -> Endpoint<T, CompletionOptions> {
-        Endpoint::new(Callback::request(|_, _: TextDocumentPositionParams| CompletionList::<T::CompletionData>::default()))
+        Endpoint::new(Callback::request(|_, _: TextDocumentPositionParams| CompletionList::<T>::default()))
     }
 }
 
@@ -102,18 +102,18 @@ impl ResolveCompletionOptions {
     pub(crate) const METHOD: &'static str = "completionItem/resolve";
 
     pub(super) fn endpoint<T: TypeProvider>() -> Endpoint<T, ResolveCompletionOptions> {
-        Endpoint::new(Callback::request(|_, item: CompletionItem<T::CompletionData>| item))
+        Endpoint::new(Callback::request(|_, item: CompletionItem<T>| item))
     }
 }
 
 impl<T: TypeProvider> Connection<T> {
-    pub fn on_completion(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer, Position) -> CompletionList<T::CompletionData>) {
+    pub fn on_completion(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer, Position) -> CompletionList<T>) {
         self.text_document.completion.set_callback(Callback::request(move |connection, params: TextDocumentPositionParams| {
             callback(connection, params.text_document, params.position)
         }));
     }
 
-    pub fn on_completion_resolve(&mut self, callback: fn(&mut Connection<T>, CompletionItem<T::CompletionData>) -> CompletionItem<T::CompletionData>) {
+    pub fn on_completion_resolve(&mut self, callback: fn(&mut Connection<T>, CompletionItem<T>) -> CompletionItem<T>) {
         self.text_document.resolve_completion.set_callback(Callback::request(move |connection, item| {
             callback(connection, item)
         }));
@@ -134,7 +134,7 @@ impl Default for CompletionOptions {
 }
 
 
-impl<T> Default for CompletionList<T> {
+impl<T: TypeProvider> Default for CompletionList<T> {
     fn default() -> Self {
         CompletionList {
             is_incomplete: false,
