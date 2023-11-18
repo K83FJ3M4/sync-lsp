@@ -1,3 +1,4 @@
 /target
-/sync-lsp-impl
 /Cargo.lock
+/sync-lsp-example-extension/node_modules
+/sync-lsp-example-extension/package-lock.json

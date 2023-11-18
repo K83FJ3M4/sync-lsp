@@ -1,0 +1,25 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "cargo",
+			"command": "build",
+			"args": [],
+			"problemMatcher": [
+				"$rustc"
+			],
+			"group": "build",
+			"label": "debug build",
+            "dependsOn": ["npm"]
+		},
+        {
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}/sync-lsp-example-extension"
+            },
+			"command": "npm",
+			"args": ["install"],
+			"label": "npm",
+        }
+	]
+}
