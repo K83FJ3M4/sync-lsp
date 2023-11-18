@@ -1,5 +1,4 @@
 use std::rc::Rc;
-
 use crate::Transport;
 use log::{Level, Log, Metadata, Record};
 use serde_json::{Value, Error as JsonError, from_value, to_value};
