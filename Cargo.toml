@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "sync-lsp",
-    "sync-lsp-example"
+    "sync-lsp-derive",
+    "sync-lsp-example",
 ]
 resolver = "2"

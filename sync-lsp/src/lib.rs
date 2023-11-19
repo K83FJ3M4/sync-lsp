@@ -17,3 +17,14 @@ pub trait TypeProvider: 'static {
     type Configuration: DeserializeOwned;
     type InitializeOptions: DeserializeOwned;
 }
+
+//TODO
+//Convert string labels on show_message_request and apply_edits to generic types
+//Refactor endpoint names
+//Implement calcellation support
+//Implement dynamic registration support
+//Implement macro for Command and TypeProvider
+
+//Add Documentation
+//Add Readme
+//Publish

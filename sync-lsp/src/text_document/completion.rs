@@ -1,3 +1,4 @@
+use crate::workspace::execute_command::{serialize_opt_command, deserialize_opt_command};
 use crate::{Connection, TypeProvider};
 use crate::connection::{Callback, Endpoint};
 use serde::{Serialize, Deserialize};
@@ -15,7 +16,7 @@ pub(crate) struct CompletionOptions {
 #[derive(Clone, Default)]
 pub(crate) struct ResolveCompletionOptions;
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(bound = "")]
 pub struct CompletionList<T: TypeProvider> {
@@ -86,6 +87,8 @@ pub struct CompletionItem<T: TypeProvider> {
     pub additional_text_edits: Vec<TextEdit>,
     #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(serialize_with = "serialize_opt_command")]
+    #[serde(deserialize_with = "deserialize_opt_command")]
     pub command: Option<T::Command>,
     pub data: T::CompletionData
 }

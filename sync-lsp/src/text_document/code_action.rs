@@ -1,4 +1,5 @@
 use crate::TypeProvider;
+use crate::workspace::execute_command::CommandContainer;
 use crate::{Connection, connection::Endpoint};
 use crate::connection::Callback;
 use serde::Deserialize;
@@ -33,7 +34,9 @@ impl CodeActionOptions {
 impl<T: TypeProvider> Connection<T> {
     pub fn on_code_action(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer, Range, CodeActionContext) -> Vec<T::Command>) {
         self.text_document.code_action.set_callback(Callback::request(move |connection, params: CodeActionParams| {
-            callback(connection, params.text_document, params.range, params.context)
+            callback(connection, params.text_document, params.range, params.context).into_iter()
+                .map(|command| CommandContainer(command))
+                .collect::<Vec<_>>()
         }))
     }
 }

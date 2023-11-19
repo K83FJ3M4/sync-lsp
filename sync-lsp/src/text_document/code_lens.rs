@@ -3,6 +3,7 @@ use crate::{Connection, connection::Endpoint};
 use crate::connection::Callback;
 use serde::{Deserialize, Serialize};
 use super::{TextDocumentIdentifer, Range};
+use crate::workspace::execute_command::{Command, serialize_opt_command, deserialize_opt_command};
 
 #[derive(Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -20,9 +21,11 @@ struct CodeLensParams  {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct CodeLens<C, V> {
+pub struct CodeLens<C: Command, V> {
     pub range: Range,
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(serialize_with = "serialize_opt_command")]
+    #[serde(deserialize_with = "deserialize_opt_command")]
     pub command: Option<C>,
     pub data: V,
 }
