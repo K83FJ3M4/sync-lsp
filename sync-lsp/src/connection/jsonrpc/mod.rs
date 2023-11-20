@@ -18,7 +18,7 @@ pub(crate) trait RpcConnection: Sized + 'static {
 
     fn notify(&mut self, method: &str, params: impl Serialize)
         { RpcConnectionImpl::notify(self, method, params) }
-    fn request(&mut self, method: &str, tag: &str, params: impl Serialize)
+    fn request(&mut self, method: &str, tag: impl Serialize, params: impl Serialize)
         { RpcConnectionImpl::request(self, method, tag, params) }
 }
 

@@ -106,6 +106,8 @@ impl Transport {
             self.input()
                 .read_exact(&mut buffer)?;
 
+            eprintln!("recv: {}", String::from_utf8_lossy(&buffer));
+
             return Ok(buffer)
         }
     }
