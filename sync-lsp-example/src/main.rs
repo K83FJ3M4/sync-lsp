@@ -1,7 +1,5 @@
-use sync_lsp::text_document::{Range, Position};
-use sync_lsp::text_document::code_lens::CodeLens;
-use sync_lsp::{Transport, Connection, TypeProvider};
-use sync_lsp::workspace::execute_command::Command as CommandDescriptor;
+use sync_lsp::{Transport, Connection, TypeProvider, UnitType};
+use sync_lsp::workspace::execute_command::{Command as CommandDescriptor, UnitCommand};
 use log::info;
 
 struct LanguageServer;
@@ -10,11 +8,11 @@ struct LanguageServer;
 struct Command<T>(T);
 
 impl TypeProvider for LanguageServer {
-    type Command = Command<u32>;
-    type CodeLensData = ();
-    type CompletionData = ();
-    type Configuration = ();
-    type InitializeOptions = ();
+    type Command = UnitCommand;
+    type CodeLensData = UnitType;
+    type CompletionData = UnitType;
+    type Configuration = UnitType;
+    type InitializeOptions = UnitType;
 }
 
 fn main() {
@@ -23,24 +21,6 @@ fn main() {
 
     connection.on_execute_command(|_, command| {
         info!("Command executed: {:?}", command);
-    });
-
-    connection.on_code_lens(|_, document| {
-        info!("Code lens requested for {:?}", document);
-        vec![CodeLens {
-            range: Range {
-                start: Position {
-                    line: 0,
-                    character: 10
-                },
-                end: Position {
-                    line: 0,
-                    character: 20
-                }
-            },
-            command: Some(Command(12)),
-            data: ()
-        }]
     });
 
     connection.serve().unwrap();

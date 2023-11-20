@@ -1,7 +1,7 @@
 use std::rc::Rc;
 use crate::Transport;
-use log::{Level, Log, Metadata, Record};
-use serde_json::{Value, Error as JsonError, from_value, to_value};
+use log::{Level, Log, Metadata, Record, error};
+use serde_json::{Value, Error as JsonError, from_value, to_value, from_str};
 use serde::{Serialize, de::DeserializeOwned};
 pub(super) use message::Error as RpcError;
 pub(crate) use message::EmptyParams;
@@ -73,8 +73,13 @@ impl<T: RpcConnection> Callback<T> {
         }))
     }
 
-    pub(crate) fn response<P: DeserializeOwned + Default>(callback: impl 'static + Fn(&mut T, String, P)) -> Self {
+    pub(crate) fn response<D: DeserializeOwned + Default, P: DeserializeOwned + Default>(callback: impl 'static + Fn(&mut T, D, P)) -> Self {
         Self::Response(Rc::new(move |server, id, value| {
+            let id = from_str(id.as_str()).unwrap_or_else(|err| {
+                error!("Failed to parse id: {id}: {err}");
+                D::default()
+            });
+
             match value.map(|value| from_value(value)) {
                 Some(Ok(params)) => Ok(callback(server, id, params)),
                 Some(Err(error)) => Err(error),
@@ -139,8 +144,14 @@ pub(super) mod RpcConnectionImpl {
         });
     }
 
-    pub(super) fn request(connection: &mut impl RpcConnection, method: &str, tag: &str, params: impl Serialize) {
-        let id = MessageID::String(format!("{method}#{tag}"));
+    pub(super) fn request(connection: &mut impl RpcConnection, method: &str, tag: impl Serialize, params: impl Serialize) {
+        let id = MessageID::String(format!("{method}#{}", match to_string(&tag) {
+            Ok(tag) => tag,
+            Err(error) => {
+                error!("Failed to serialize tag for {method} request: {}", error);
+                "{}".to_string()
+            }
+        }));
 
         let message = 'message: {
             if !send(connection, Message::Request {

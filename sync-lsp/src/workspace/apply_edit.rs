@@ -40,7 +40,7 @@ impl<T: TypeProvider> Connection<T> {
 impl<T: TypeProvider> Default for ApplyWorkspaceRequest<T> {
     fn default() -> Self {
         Self {
-            callback: Callback::response(|_, _, _: ApplyWorkspaceEditResponse| ())
+            callback: Callback::response(|_, _: String, _: ApplyWorkspaceEditResponse| ())
         }
     }
 }
