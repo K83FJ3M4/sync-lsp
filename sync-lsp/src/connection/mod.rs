@@ -36,7 +36,7 @@ pub struct Connection<T: TypeProvider> {
     pub(crate) workspace: WorkspaceService<T>
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct UnitType;
 
 impl<T: TypeProvider> Connection<T> {

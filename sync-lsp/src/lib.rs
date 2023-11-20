@@ -1,4 +1,5 @@
 pub use connection::{Transport, Connection, UnitType};
+pub use sync_lsp_derive::type_provider;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use workspace::execute_command::Command;
@@ -21,11 +22,10 @@ pub trait TypeProvider: 'static {
 }
 
 //TODO
-//Convert string labels on show_message_request and apply_edits to generic types
 //Implement calcellation support
 //Implement dynamic registration support
-//Implement macro for Command and TypeProvider
 
+//Add License
 //Add Documentation
 //Add Readme
 //Publish

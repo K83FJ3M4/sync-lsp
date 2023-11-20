@@ -9,14 +9,9 @@ struct LanguageServer;
 #[derive(Clone, Debug, CommandDescriptor)]
 struct Command<T>(T);
 
+#[sync_lsp::type_provider]
 impl TypeProvider for LanguageServer {
-    type Command = UnitCommand;
-    type CodeLensData = UnitType;
-    type CompletionData = UnitType;
-    type Configuration = UnitType;
-    type InitializeOptions = UnitType;
     type ShowMessageRequestData = u32;
-    type ApplyEditData = u32;
 }
 
 fn main() {
@@ -32,27 +27,7 @@ fn main() {
                 data: 1
             },
             MessageActionItem {
-                title: "Item 2".to_string(),
-                data: 2
-            },
-        ]);
-        connection.show_message_request(MessageType::Info, "Choose an item 2".to_string(), vec![
-            MessageActionItem {
                 title: "Item 1".to_string(),
-                data: 1
-            },
-            MessageActionItem {
-                title: "Item 2".to_string(),
-                data: 2
-            },
-        ]);
-        connection.show_message_request(MessageType::Info, "Choose an item 3".to_string(), vec![
-            MessageActionItem {
-                title: "Item 1".to_string(),
-                data: 1
-            },
-            MessageActionItem {
-                title: "Item 2".to_string(),
                 data: 2
             },
         ]);

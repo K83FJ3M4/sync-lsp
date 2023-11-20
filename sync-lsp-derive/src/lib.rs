@@ -1,14 +1,135 @@
 use proc_macro::{TokenStream, Span};
 use syn::punctuated::Punctuated;
 use syn::spanned::Spanned;
-use syn::token::{Paren, Brace, Colon, Bracket, Semi};
-use quote::quote;
+use syn::token::{Paren, Brace, Colon, Bracket, Semi, Eq};
+use quote::{quote, ToTokens};
 use syn::{
     parse_macro_input, DeriveInput, Data, Fields, Ident, Meta, Expr, Lit, ExprLit,
     ExprAssign, ExprPath, Generics, Variant, Result, Error, PathSegment,
     FieldsUnnamed, Visibility, Pat, PatStruct, Path, PatTupleStruct, PatIdent,
-    FieldPat, Member, Field, Type, TypeArray, LitInt, FieldMutability, PatSlice,
+    FieldPat, Member, Field, Type, TypeArray, LitInt, FieldMutability, PatSlice, ItemImpl, ImplItemType, TypeNever, TypePath, ImplItem,
 };
+
+#[proc_macro_attribute]
+pub fn type_provider(args: TokenStream, input: TokenStream) -> TokenStream {
+    if !args.is_empty() {
+        return Error::new(
+            Span::call_site().into(),
+            "The type_provider attribute does not take any arguments"
+        ).to_compile_error().into()
+    }
+
+    let mut input = parse_macro_input!(input as ItemImpl);
+    let mut types = Vec::new();
+
+    let mut unit = Path {
+        leading_colon: Some(Default::default()),
+        segments: Punctuated::new()
+    };
+
+    unit.segments.push(PathSegment::from(Ident::new("sync_lsp", Span::call_site().into())));
+    unit.segments.push(PathSegment::from(Ident::new("UnitType", Span::call_site().into())));
+
+    let default = ImplItemType {
+        attrs: Vec::new(),
+        vis: Visibility::Inherited,
+        defaultness: None,
+        type_token: Default::default(),
+        ident: Ident::new("Default", Span::call_site().into()),
+        eq_token: Eq::default(),
+        ty: Type::Never(TypeNever {
+            bang_token: Default::default()
+        }),
+        semi_token: Semi::default(),
+        generics: Generics::default()
+    };
+
+    types.push(ImplItem::Type(ImplItemType {
+        ident: Ident::new("Command", Span::call_site().into()),
+        ty: Type::Path(TypePath {
+            qself: None,
+            path: {
+                let mut unit = Path {
+                    leading_colon: Some(Default::default()),
+                    segments: Punctuated::new()
+                };
+
+                unit.segments.push(PathSegment::from(Ident::new("sync_lsp", Span::call_site().into())));
+                unit.segments.push(PathSegment::from(Ident::new("workspace", Span::call_site().into())));
+                unit.segments.push(PathSegment::from(Ident::new("execute_command", Span::call_site().into())));
+                unit.segments.push(PathSegment::from(Ident::new("UnitCommand", Span::call_site().into())));
+                unit
+            }
+        }),
+        ..default.clone()
+    }));
+
+    types.push(ImplItem::Type(ImplItemType {
+        ident: Ident::new("CodeLensData", Span::call_site().into()),
+        ty: Type::Path(TypePath {
+            qself: None,
+            path: unit.clone()
+        }),
+        ..default.clone()
+    }));
+
+    types.push(ImplItem::Type(ImplItemType {
+        ident: Ident::new("CompletionData", Span::call_site().into()),
+        ty: Type::Path(TypePath {
+            qself: None,
+            path: unit.clone()
+        }),
+        ..default.clone()
+    }));
+
+    types.push(ImplItem::Type(ImplItemType {
+        ident: Ident::new("Configuration", Span::call_site().into()),
+        ty: Type::Path(TypePath {
+            qself: None,
+            path: unit.clone()
+        }),
+        ..default.clone()
+    }));
+
+    types.push(ImplItem::Type(ImplItemType {
+        ident: Ident::new("InitializeOptions", Span::call_site().into()),
+        ty: Type::Path(TypePath {
+            qself: None,
+            path: unit.clone()
+        }),
+        ..default.clone()
+    }));
+
+    types.push(ImplItem::Type(ImplItemType {
+        ident: Ident::new("ShowMessageRequestData", Span::call_site().into()),
+        ty: Type::Path(TypePath {
+            qself: None,
+            path: unit.clone()
+        }),
+        ..default.clone()
+    }));
+
+    types.push(ImplItem::Type(ImplItemType {
+        ident: Ident::new("ApplyEditData", Span::call_site().into()),
+        ty: Type::Path(TypePath {
+            qself: None,
+            path: unit.clone()
+        }),
+        ..default.clone()
+    }));
+
+    for item in input.items.iter() {
+        let ImplItem::Type(item) = item else { continue };
+        types.retain(|r#type| {
+            let ImplItem::Type(r#type) = r#type else { return false };
+            r#type.ident != item.ident
+        });
+    }
+
+    input.items.extend_from_slice(&types);
+
+    input.into_token_stream().into()
+}
 
 #[proc_macro_derive(Command, attributes(command))]
 pub fn command(input: TokenStream) -> TokenStream {
