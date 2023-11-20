@@ -12,6 +12,10 @@ use crate::text_document::TextDocumentService;
 use crate::window::WindowService;
 use crate::workspace::WorkspaceService;
 
+use serde::{Serialize, Deserialize};
+use serde::ser::Serializer;
+use serde::de::Deserializer;
+
 use self::jsonrpc::RpcConnectionImpl;
 
 mod rpc;
@@ -31,6 +35,9 @@ pub struct Connection<T: TypeProvider> {
     pub(crate) text_document: TextDocumentService<T>,
     pub(crate) workspace: WorkspaceService<T>
 }
+
+#[derive(Clone, Copy, Debug)]
+pub struct UnitType;
 
 impl<T: TypeProvider> Connection<T> {
     pub fn new(state: T, transport: Transport) -> Connection<T> {
@@ -84,5 +91,18 @@ impl<T: TypeProvider> Deref for Connection<T> {
 impl<T: TypeProvider> DerefMut for Connection<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.state
+    }
+}
+
+impl Serialize for UnitType {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_u32(99)
+    }
+}
+
+impl<'a> Deserialize<'a> for UnitType {
+    fn deserialize<D: Deserializer<'a>>(deserializer: D) -> Result<Self, D::Error> {
+        u32::deserialize(deserializer)
+            .map(|_| UnitType)
     }
 }

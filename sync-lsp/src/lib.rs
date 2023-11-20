@@ -1,4 +1,4 @@
-pub use connection::{Transport, Connection};
+pub use connection::{Transport, Connection, UnitType};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use workspace::execute_command::Command;
