@@ -1,7 +1,7 @@
 use sync_lsp::window::MessageType;
 use sync_lsp::window::show_message_request::MessageActionItem;
-use sync_lsp::{Transport, Connection, TypeProvider, UnitType};
-use sync_lsp::workspace::execute_command::{Command as CommandDescriptor, UnitCommand};
+use sync_lsp::{Transport, Connection, TypeProvider};
+use sync_lsp::workspace::execute_command::{Command as CommandDescriptor};
 use log::info;
 
 struct LanguageServer;

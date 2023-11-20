@@ -25,7 +25,6 @@ pub trait TypeProvider: 'static {
 //Implement calcellation support
 //Implement dynamic registration support
 
-//Add License
 //Add Documentation
 //Add Readme
 //Publish
