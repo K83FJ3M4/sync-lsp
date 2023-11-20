@@ -22,7 +22,7 @@ impl DidChangeConfigurationOptions {
 }
 
 impl<T: TypeProvider> Connection<T> {
-    pub fn on_did_change_configuration(&mut self, callback: fn(&mut Connection<T>, T::Configuration)) {
+    pub fn on_change_configuration(&mut self, callback: fn(&mut Connection<T>, T::Configuration)) {
         self.workspace.did_change_configuration.set_callback(Callback::notification(move |connection, params: DidChangeConfigurationParams<T::Configuration>| {
             callback(connection, params.settings)
         }))

@@ -25,7 +25,7 @@ impl DidCloseOptions {
 }
 
 impl<T: TypeProvider> Connection<T> {
-    pub fn on_did_close(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer)) {
+    pub fn on_close(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer)) {
         self.text_document.did_close.set_callback(Callback::notification(move |connection, params: DidCloseTextDocumentParams| {
             callback(connection, params.text_document)
         }))

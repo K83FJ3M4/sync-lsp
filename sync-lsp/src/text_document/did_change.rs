@@ -32,7 +32,7 @@ impl DidChangeOptions {
 }
 
 impl<T: TypeProvider> Connection<T> {
-    pub fn on_did_change(&mut self, callback: fn(&mut Connection<T>, VersionedTextDocumentIdentifier, Vec<TextDocumentContentChangeEvent>)) {
+    pub fn on_change(&mut self, callback: fn(&mut Connection<T>, VersionedTextDocumentIdentifier, Vec<TextDocumentContentChangeEvent>)) {
         self.text_document.did_change.set_callback(Callback::notification(move |connection, params: DidChangeTextDocumentParams| {
             callback(connection, params.text_document, params.content_changes)
         }));

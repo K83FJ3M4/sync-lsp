@@ -31,7 +31,7 @@ impl DidOpenOptions {
 }
 
 impl<T: TypeProvider> Connection<T> {
-    pub fn on_did_open(&mut self, callback: fn(&mut Connection<T>, TextDocumentItem)) {
+    pub fn on_open(&mut self, callback: fn(&mut Connection<T>, TextDocumentItem)) {
         self.text_document.did_open.set_callback(Callback::notification(move |connection, params: DidOpenParams| {
             callback(connection, params.text_document)
         }))

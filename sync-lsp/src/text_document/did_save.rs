@@ -28,13 +28,13 @@ impl DidSaveOptions {
 }
 
 impl<T: TypeProvider> Connection<T> {
-    pub fn on_did_save(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer, Option<String>)) {
+    pub fn on_save(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer, Option<String>)) {
         self.text_document.did_save.set_callback(Callback::notification(move |connection, params: DidSaveTextDocumentParams| {
             callback(connection, params.text_document, params.text)
         }))
     }
 
-    pub fn set_on_save_include_text(&mut self, value: bool) {
+    pub fn set_save_include_text(&mut self, value: bool) {
         self.text_document.did_save.options_mut().include_text = value;
     }
 }

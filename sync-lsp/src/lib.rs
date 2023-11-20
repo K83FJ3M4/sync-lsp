@@ -20,7 +20,6 @@ pub trait TypeProvider: 'static {
 
 //TODO
 //Convert string labels on show_message_request and apply_edits to generic types
-//Refactor endpoint names
 //Implement calcellation support
 //Implement dynamic registration support
 //Implement macro for Command and TypeProvider
