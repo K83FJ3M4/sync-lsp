@@ -16,6 +16,7 @@ impl TypeProvider for LanguageServer {
     type Configuration = UnitType;
     type InitializeOptions = UnitType;
     type ShowMessageRequestData = u32;
+    type ApplyEditData = u32;
 }
 
 fn main() {

@@ -24,7 +24,7 @@ pub struct ApplyWorkspaceEditResponse {
 }
 
 impl<T: TypeProvider> Connection<T> {
-    pub fn apply_edit(&mut self, tag: &str, edit: WorkspaceEdit) {
+    pub fn apply_edit(&mut self, tag: T::ApplyEditData, edit: WorkspaceEdit) {
         self.request(
             ApplyWorkspaceRequest::<T>::METHOD,
             tag,
@@ -32,7 +32,7 @@ impl<T: TypeProvider> Connection<T> {
         );
     }
 
-    pub fn on_apply_edit_response(&mut self, f: fn(&mut Connection<T>, String, ApplyWorkspaceEditResponse)) {
+    pub fn on_apply_edit_response(&mut self, f: fn(&mut Connection<T>, T::ApplyEditData, ApplyWorkspaceEditResponse)) {
         self.workspace.apply_edit.callback = Callback::response(f);
     }
 }
@@ -40,7 +40,7 @@ impl<T: TypeProvider> Connection<T> {
 impl<T: TypeProvider> Default for ApplyWorkspaceRequest<T> {
     fn default() -> Self {
         Self {
-            callback: Callback::response(|_, _: String, _: ApplyWorkspaceEditResponse| ())
+            callback: Callback::response(|_, _: T::ApplyEditData, _: ApplyWorkspaceEditResponse| ())
         }
     }
 }

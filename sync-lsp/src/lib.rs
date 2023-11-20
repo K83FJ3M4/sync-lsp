@@ -17,6 +17,7 @@ pub trait TypeProvider: 'static {
     type Configuration: DeserializeOwned;
     type InitializeOptions: DeserializeOwned;
     type ShowMessageRequestData: Serialize + DeserializeOwned + Default;
+    type ApplyEditData: Serialize + DeserializeOwned + Default;
 }
 
 //TODO
