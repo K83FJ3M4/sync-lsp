@@ -7,7 +7,7 @@ use syn::{
     parse_macro_input, DeriveInput, Data, Fields, Ident, Meta, Expr, Lit, ExprLit,
     ExprAssign, ExprPath, Generics, Variant, Result, Error, PathSegment,
     FieldsUnnamed, Visibility, Pat, PatStruct, Path, PatTupleStruct, PatIdent,
-    FieldPat, Member, Field, Type, TypeArray, LitInt, FieldMutability, PatSlice
+    FieldPat, Member, Field, Type, TypeArray, LitInt, FieldMutability, PatSlice,
 };
 
 #[proc_macro_derive(Command, attributes(command))]

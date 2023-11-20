@@ -12,6 +12,9 @@ pub(crate) struct ExecuteCommandOptions {
 
 pub(crate) struct CommandContainer<C: Command>(pub C);
 
+#[derive(Debug, Clone, Deserialize)]
+pub enum UnitCommand {}
+
 pub trait Command: Clone {
     fn commands() -> Vec<String>;
     fn serialize<T: Serializer>(&self, serializer: T) -> Result<T::Ok, T::Error>;
@@ -59,5 +62,19 @@ impl<C: Command> Serialize for CommandContainer<C> {
 impl<'de, C:Command> Deserialize<'de> for CommandContainer<C> {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         Ok(CommandContainer(C::deserialize(deserializer)?))
+    }
+}
+
+impl Command for UnitCommand {
+    fn commands() -> Vec<String> {
+        vec![]
+    }
+
+    fn serialize<T: Serializer>(&self, _: T) -> Result<T::Ok, T::Error> {
+        match *self {}
+    }
+
+    fn deserialize<'de, T: Deserializer<'de>>(deserializer: T) -> Result<Self, T::Error> where Self: Sized {
+        <Self as Deserialize>::deserialize(deserializer)
     }
 }
