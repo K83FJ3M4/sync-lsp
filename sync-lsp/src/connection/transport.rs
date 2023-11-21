@@ -5,15 +5,20 @@ use std::{io::{
     StdoutLock,
     Error,
     stdin,
-    stdout
-}, time::Duration};
+    stdout, BufReader
+}, time::Duration, net::{ToSocketAddrs, TcpListener}};
+
+use mio::net::TcpStream;
 
 use mio::{
     Events,
-    Interest,
     Poll,
-    Token, unix::SourceFd
+    Token,
+    Interest
 };
+
+#[cfg(unix)]
+use mio::unix::SourceFd;
 
 use log::{
     warn,
@@ -32,24 +37,79 @@ enum RawTransport {
     Stdio {
         input: StdinLock<'static>,
         output: StdoutLock<'static>,
+    },
+    Tpc {
+        input: BufReader<TcpStream>,
+        output: TcpStream
+    },
+    Custom {
+        input: Box<dyn BufRead>,
+        output: Box<dyn Write>
     }
 }
 
 impl RawTransport {
     fn input(&mut self) -> &mut dyn BufRead {
         match self {
-            Self::Stdio { input, .. } => input
+            Self::Stdio { input, .. } => input,
+            Self::Tpc { input, .. } => input,
+            Self::Custom { input, .. } => input
         }
     }
 
     fn output(&mut self) -> &mut dyn Write {
         match self {
-            Self::Stdio { output, .. } => output
+            Self::Stdio { output, .. } => output,
+            Self::Tpc { output, .. } => output,
+            Self::Custom { output, .. } => output
         }
     }
 }
 
 impl Transport {
+    pub fn custom(input: impl BufRead + 'static, output: impl Write + 'static) -> Transport {
+        Transport {
+            raw: RawTransport::Custom {
+                input: Box::new(input),
+                output: Box::new(output)
+            },
+            error: None,
+            events: Events::with_capacity(1),
+            buffer: Vec::new(),
+            poll: None
+        }
+    }
+
+    pub fn tcp<T: ToSocketAddrs>(addr: T) -> Result<Transport, Error> {
+        let mut poll = Poll::new().ok();
+        let listener = TcpListener::bind(addr)?;
+        let (stream, ..) = listener.accept()?;
+        let input = stream.try_clone()?;
+        let mut input = TcpStream::from_std(input);
+
+        if let Some(poll) = poll.as_mut() {
+            poll.registry().register(
+                &mut input,
+                Token(0),
+                Interest::READABLE
+            ).ok();
+        }
+
+        let input = BufReader::new(input);
+        let output = TcpStream::from_std(stream);
+
+        Ok(Transport {
+            raw: RawTransport::Tpc {
+                output,
+                input
+            },
+            error: None,
+            events: Events::with_capacity(1),
+            buffer: Vec::new(),
+            poll
+        })
+    }
+
     pub fn stdio() -> Transport {
         let poll = Poll::new().ok();
         let input = stdin().lock();

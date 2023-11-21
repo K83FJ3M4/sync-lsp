@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 log = { version = "0.4.20", features = ["std"] }
-mio = { version = "0.8.9", features = ["os-poll", "os-ext"] }
+mio = { version = "0.8.9", features = ["os-poll", "os-ext", "net"] }
 serde = { version = "1.0.190", features = ["derive"] }
 serde_json = "1.0.108"
 serde_repr = "0.1.17"

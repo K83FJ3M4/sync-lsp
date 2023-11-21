@@ -23,7 +23,7 @@ pub trait TypeProvider: 'static {
 
 //TODO
 //Implement dynamic registration support
-//Implement TCP and IPC support
+//support cancellation of the server side
 
 //Add Documentation
 //Add Readme
