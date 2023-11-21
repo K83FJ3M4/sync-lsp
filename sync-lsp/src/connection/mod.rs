@@ -3,7 +3,7 @@ use std::ops::{Deref, DerefMut};
 use jsonrpc::RpcError;
 
 pub use transport::Transport;
-pub(crate) use jsonrpc::{Callback, ErrorCode, EmptyParams, RpcConnection};
+pub(crate) use jsonrpc::{Callback, ErrorCode, EmptyParams, RpcConnection, CancelParams};
 pub(crate) use rpc::Endpoint;
 
 use crate::TypeProvider;
@@ -16,7 +16,7 @@ use serde::{Serialize, Deserialize};
 use serde::ser::Serializer;
 use serde::de::Deserializer;
 
-use self::jsonrpc::RpcConnectionImpl;
+use self::jsonrpc::{RpcConnectionImpl, MessageID};
 
 mod rpc;
 mod jsonrpc;
@@ -25,6 +25,7 @@ mod lifecycle;
 
 pub struct Connection<T: TypeProvider> {
     state: T,
+    current_request: Option<MessageID>,
     transport: Transport,
     error: Option<RpcError>,
     process_id: Option<u32>,
@@ -48,6 +49,7 @@ impl<T: TypeProvider> Connection<T> {
             process_id: None,
             root_uri: None,
             initialization_options: None,
+            current_request: None,
             lifecycle: Default::default(),
             window: Default::default(),
             text_document: Default::default(),
@@ -77,6 +79,20 @@ impl<T: TypeProvider> Connection<T> {
 
     pub fn initialization_options(&self) -> Option<&T::InitializeOptions> {
         self.initialization_options.as_ref()
+    }
+
+    pub fn cancelled(&mut self) -> bool {
+        let Some(id) = self.current_request.clone() else { return false; };
+        while let Some(params) = self.peek_notification::<CancelParams>("$/cancelRequest") {
+            if params.id == id {
+                self.current_request = self.error(
+                    ErrorCode::RequestCancelled,
+                    "Request cancelled".to_string()
+                );
+                return true;
+            }
+        }
+        false
     }
 }
 

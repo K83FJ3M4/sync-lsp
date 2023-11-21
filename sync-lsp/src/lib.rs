@@ -22,8 +22,8 @@ pub trait TypeProvider: 'static {
 }
 
 //TODO
-//Implement calcellation support
 //Implement dynamic registration support
+//Implement TCP and IPC support
 
 //Add Documentation
 //Add Readme

@@ -1,6 +1,6 @@
 use crate::{Connection, TypeProvider};
 use crate::lifecycle::initialize::{InitializeParams, InitializeResult, ServerCapabilities};
-use crate::lifecycle::{LifecycleService, Initialized, Initialize, Shutdown, Exit};
+use crate::lifecycle::{LifecycleService, Initialized, Initialize, Shutdown, Exit, Cancel};
 use crate::text_document::TextDocumentSyncOptions;
 use super::ErrorCode;
 use serde_json::from_value;
@@ -12,7 +12,8 @@ impl<T: TypeProvider> Default for LifecycleService<T> {
             initialize: Initialize(initialize),
             initialized: Initialized(initialized_error),
             shutdown: Shutdown(shutdown_error),
-            exit: Exit(exit_error)
+            exit: Exit(exit_error),
+            cancel: Cancel(|_| ())
         }
     }
 }

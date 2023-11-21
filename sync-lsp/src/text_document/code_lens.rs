@@ -34,7 +34,9 @@ impl CodeLensOptions {
     pub(crate) const METHOD: &'static str = "textDocument/codeLens";
     
     pub(super) fn endpoint<T: TypeProvider>() -> Endpoint<T, CodeLensOptions> {
-        Endpoint::new(Callback::request(|_, _: CodeLensParams| Vec::<CodeLens<T::Command, T::CodeLensData>>::new()))
+        Endpoint::new(Callback::request(|_, _: CodeLensParams| {
+            Vec::<CodeLens<T::Command, T::CodeLensData>>::new()
+        }))
     }
 }
 

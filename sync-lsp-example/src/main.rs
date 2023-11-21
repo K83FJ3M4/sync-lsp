@@ -17,7 +17,16 @@ impl TypeProvider for LanguageServer {
 fn main() {
     let transport = Transport::stdio();
     let mut connection = Connection::new(LanguageServer, transport);
-
+    
+    connection.on_code_lens(|connection, document| {
+        std::thread::sleep(std::time::Duration::from_secs(1));
+        if connection.cancelled() {
+            info!("Cancelled: {document:?}");
+        } else {
+            info!("Not cancelled: {document:?}");
+        }
+        Vec::new()
+    });
 
     connection.on_open(|connection, params| {
         info!("Open: {:?}", params);

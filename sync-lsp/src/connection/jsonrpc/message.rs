@@ -6,10 +6,15 @@ use serde_json::Value;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Hash, PartialEq, Eq)]
 #[serde(untagged)]
-pub(super) enum MessageID {
+pub(crate) enum MessageID {
     Integer(u64),
     String(String),
     Null
+}
+
+#[derive(Deserialize)]
+pub(crate) struct CancelParams {
+    pub(crate) id: MessageID
 }
 
 #[derive(Serialize, Deserialize, Debug)]

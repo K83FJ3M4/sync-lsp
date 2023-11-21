@@ -3,8 +3,8 @@ use crate::Transport;
 use log::{Level, Log, Metadata, Record, error};
 use serde_json::{Value, Error as JsonError, from_value, to_value, from_str};
 use serde::{Serialize, de::DeserializeOwned};
-pub(super) use message::Error as RpcError;
-pub(crate) use message::EmptyParams;
+pub(super) use message::{Error as RpcError, MessageID};
+pub(crate) use message::{EmptyParams, CancelParams};
 pub use message::ErrorCode;
 use std::sync::mpsc::Sender;
 
@@ -15,11 +15,14 @@ pub(crate) trait RpcConnection: Sized + 'static {
     fn resolve(&self, method: &str) -> Option<Callback<Self>>;
     fn take_error(&mut self) -> Option<RpcError>;
     fn log(&mut self, level: Level, message: String);
+    fn set_current_request(&mut self, id: Option<MessageID>);
 
     fn notify(&mut self, method: &str, params: impl Serialize)
         { RpcConnectionImpl::notify(self, method, params) }
     fn request(&mut self, method: &str, tag: impl Serialize, params: impl Serialize)
         { RpcConnectionImpl::request(self, method, tag, params) }
+    fn peek_notification<T: DeserializeOwned>(&mut self, method: &str) -> Option<T>
+        { RpcConnectionImpl::peek_notification(self, method) }
 }
 
 pub(crate) enum Callback<T: RpcConnection> {
@@ -92,7 +95,8 @@ impl<T: RpcConnection> Callback<T> {
 #[allow(non_snake_case)]
 pub(super) mod RpcConnectionImpl {
     use log::{error, set_boxed_logger, set_max_level, LevelFilter};
-    use serde_json::{Value, from_slice, to_string, to_value};
+    use serde::de::DeserializeOwned;
+    use serde_json::{Value, from_slice, to_string, to_value, from_value};
     use std::io::{Error, ErrorKind};
     use std::sync::mpsc::channel;
     use serde::Serialize;
@@ -129,6 +133,14 @@ pub(super) mod RpcConnectionImpl {
         } else {
             Ok(())
         }
+    }
+
+    pub(super) fn peek_notification<T: DeserializeOwned>(connection: &mut impl RpcConnection, target: &str) -> Option<T> {
+        let data = connection.transport().peek()?;
+        let message = from_slice(data.as_slice()).ok()?;
+        let Message::Notification { method, params, .. } = message else { return None };
+        if method != target { return None };
+        from_value(params).ok()
     }
 
     pub(super) fn notify(connection: &mut impl RpcConnection, method: &str, params: impl Serialize) {
@@ -322,7 +334,9 @@ pub(super) mod RpcConnectionImpl {
             }
         };
 
+        connection.set_current_request(Some(id.clone()));
         let result = handler(connection, params);
+        connection.set_current_request(None);
 
         if let Some(error) = connection.take_error() {
             send(connection, Message::Error {

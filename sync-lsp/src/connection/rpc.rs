@@ -2,7 +2,7 @@ use log::Level;
 
 use crate::window::MessageType;
 use crate::{Connection, TypeProvider};
-use super::jsonrpc::{RpcConnection, Callback, RpcError};
+use super::jsonrpc::{RpcConnection, Callback, RpcError, MessageID};
 
 pub(crate) struct Endpoint<T: TypeProvider, O: Clone + Default> {
     callback: Callback<Connection<T>>,
@@ -35,6 +35,10 @@ impl<T: TypeProvider> RpcConnection for Connection<T> {
             .or(self.window.resolve(method))
             .or(self.text_document.resolve(method))
             .or(self.workspace.resolve(method))
+    }
+
+    fn set_current_request(&mut self, id: Option<MessageID>) {
+        self.current_request = id;
     }
 }
 
