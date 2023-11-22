@@ -1,5 +1,5 @@
 use crate::TypeProvider;
-use crate::{Connection, connection::Endpoint};
+use crate::{Server, connection::Endpoint};
 use crate::connection::Callback;
 use serde::Deserialize;
 use super::{VersionedTextDocumentIdentifier, Range};
@@ -31,10 +31,10 @@ impl DidChangeOptions {
     }
 }
 
-impl<T: TypeProvider> Connection<T> {
-    pub fn on_change(&mut self, callback: fn(&mut Connection<T>, VersionedTextDocumentIdentifier, Vec<TextDocumentContentChangeEvent>)) {
-        self.text_document.did_change.set_callback(Callback::notification(move |connection, params: DidChangeTextDocumentParams| {
-            callback(connection, params.text_document, params.content_changes)
+impl<T: TypeProvider> Server<T> {
+    pub fn on_change(&mut self, callback: fn(&mut Server<T>, VersionedTextDocumentIdentifier, Vec<TextDocumentContentChangeEvent>)) {
+        self.text_document.did_change.set_callback(Callback::notification(move |server, params: DidChangeTextDocumentParams| {
+            callback(server, params.text_document, params.content_changes)
         }));
     }
 }

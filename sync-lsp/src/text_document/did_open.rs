@@ -1,4 +1,4 @@
-use crate::{Connection, TypeProvider};
+use crate::{Server, TypeProvider};
 use crate::connection::{Callback, Endpoint};
 use serde::Deserialize;
 use super::DocumentUri;
@@ -30,10 +30,10 @@ impl DidOpenOptions {
     }
 }
 
-impl<T: TypeProvider> Connection<T> {
-    pub fn on_open(&mut self, callback: fn(&mut Connection<T>, TextDocumentItem)) {
-        self.text_document.did_open.set_callback(Callback::notification(move |connection, params: DidOpenParams| {
-            callback(connection, params.text_document)
+impl<T: TypeProvider> Server<T> {
+    pub fn on_open(&mut self, callback: fn(&mut Server<T>, TextDocumentItem)) {
+        self.text_document.did_open.set_callback(Callback::notification(move |server, params: DidOpenParams| {
+            callback(server, params.text_document)
         }))
     }
 }

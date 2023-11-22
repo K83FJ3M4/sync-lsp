@@ -1,5 +1,5 @@
 use crate::TypeProvider;
-use crate::{Connection, connection::Endpoint};
+use crate::{Server, connection::Endpoint};
 use crate::connection::Callback;
 use super::{TextDocumentIdentifer, TextEdit};
 use serde::Deserialize;
@@ -32,10 +32,10 @@ impl DocumentFormattingOptions {
     }
 }
 
-impl<T: TypeProvider> Connection<T> {
-    pub fn on_formatting(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer, FormattingOptions) -> Vec<TextEdit>) {
-        self.text_document.formatting.set_callback(Callback::request(move |connection, params: DocumentFormattingParams | {
-            callback(connection, params.text_document, params.options)
+impl<T: TypeProvider> Server<T> {
+    pub fn on_formatting(&mut self, callback: fn(&mut Server<T>, TextDocumentIdentifer, FormattingOptions) -> Vec<TextEdit>) {
+        self.text_document.formatting.set_callback(Callback::request(move |server, params: DocumentFormattingParams | {
+            callback(server, params.text_document, params.options)
         }))
     }
 }

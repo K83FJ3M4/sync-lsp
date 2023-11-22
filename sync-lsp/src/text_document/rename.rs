@@ -1,6 +1,6 @@
 use crate::TypeProvider;
 use crate::workspace::apply_edit::WorkspaceEdit;
-use crate::{Connection, connection::Endpoint};
+use crate::{Server, connection::Endpoint};
 use crate::connection::Callback;
 use super::{TextDocumentIdentifer, Position};
 use serde::Deserialize;
@@ -24,10 +24,10 @@ impl RenameOptions {
     }
 }
 
-impl<T: TypeProvider> Connection<T> {
-    pub fn on_rename(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer, Position, String) -> WorkspaceEdit) {
-        self.text_document.rename.set_callback(Callback::request(move |connection, params: RenameParams | {
-            callback(connection, params.text_document, params.position, params.new_name)
+impl<T: TypeProvider> Server<T> {
+    pub fn on_rename(&mut self, callback: fn(&mut Server<T>, TextDocumentIdentifer, Position, String) -> WorkspaceEdit) {
+        self.text_document.rename.set_callback(Callback::request(move |server, params: RenameParams | {
+            callback(server, params.text_document, params.position, params.new_name)
         }))
     }
 }

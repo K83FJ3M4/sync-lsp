@@ -1,4 +1,4 @@
-use crate::{connection::{Callback, Endpoint}, Connection, TypeProvider};
+use crate::{connection::{Callback, Endpoint}, Server, TypeProvider};
 
 use self::{did_change_configuration::DidChangeConfigurationOptions, did_change_watched_files::DidChangeWatchedFilesOptions, symbol::SymbolOptions, execute_command::ExecuteCommandOptions, apply_edit::ApplyWorkspaceRequest};
 
@@ -17,7 +17,7 @@ pub(crate) struct WorkspaceService<T: TypeProvider> {
 }
 
 impl<T: TypeProvider> WorkspaceService<T> {
-    pub(super) fn resolve(&self, method: &str) -> Option<Callback<Connection<T>>> {
+    pub(super) fn resolve(&self, method: &str) -> Option<Callback<Server<T>>> {
         match method {
             DidChangeConfigurationOptions::METHOD => Some(self.did_change_configuration.callback()),
             SymbolOptions::METHOD => Some(self.symbol.callback()),

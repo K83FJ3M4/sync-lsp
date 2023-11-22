@@ -1,5 +1,5 @@
 use crate::TypeProvider;
-use crate::{Connection, connection::Endpoint};
+use crate::{Server, connection::Endpoint};
 use crate::connection::Callback;
 use super::{TextDocumentIdentifer, Position, Location};
 use serde::Deserialize;
@@ -30,10 +30,10 @@ impl ReferenceOptions {
     }
 }
 
-impl<T: TypeProvider> Connection<T> {
-    pub fn on_references(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer, Position, context: ReferenceContext) -> Vec<Location>) {
-        self.text_document.references.set_callback(Callback::request(move |connection, params: ReferenceParams| {
-            callback(connection, params.text_document, params.position, params.context)
+impl<T: TypeProvider> Server<T> {
+    pub fn on_references(&mut self, callback: fn(&mut Server<T>, TextDocumentIdentifer, Position, context: ReferenceContext) -> Vec<Location>) {
+        self.text_document.references.set_callback(Callback::request(move |server, params: ReferenceParams| {
+            callback(server, params.text_document, params.position, params.context)
         }))
     }
 }

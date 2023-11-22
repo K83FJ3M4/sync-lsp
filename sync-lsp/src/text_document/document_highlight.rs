@@ -1,5 +1,5 @@
 use crate::TypeProvider;
-use crate::{Connection, connection::Endpoint};
+use crate::{Server, connection::Endpoint};
 use crate::connection::Callback;
 use super::{TextDocumentIdentifer, Position, Range, TextDocumentPositionParams};
 use serde::Serialize;
@@ -32,10 +32,10 @@ impl DocumentHighlightOptions {
     }
 }
 
-impl<T: TypeProvider> Connection<T> {
-    pub fn on_document_highlight(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer, Position) -> Vec<DocumentHighlight>) {
-        self.text_document.document_highlight.set_callback(Callback::request(move |connection, params: TextDocumentPositionParams| {
-            callback(connection, params.text_document, params.position)
+impl<T: TypeProvider> Server<T> {
+    pub fn on_document_highlight(&mut self, callback: fn(&mut Server<T>, TextDocumentIdentifer, Position) -> Vec<DocumentHighlight>) {
+        self.text_document.document_highlight.set_callback(Callback::request(move |server, params: TextDocumentPositionParams| {
+            callback(server, params.text_document, params.position)
         }))
     }
 }

@@ -1,4 +1,4 @@
-use crate::{Connection, TypeProvider};
+use crate::{Server, TypeProvider};
 use crate::connection::Callback;
 
 pub(super) use self::exit::Exit;
@@ -22,7 +22,7 @@ pub(super) struct LifecycleService<T: TypeProvider> {
 }
 
 impl<T: TypeProvider> LifecycleService<T> {
-    pub(super) fn resolve(&self, method: &str) -> Option<Callback<Connection<T>>> {
+    pub(super) fn resolve(&self, method: &str) -> Option<Callback<Server<T>>> {
         match method {
             Initialize::<T>::METHOD => Some(self.initialize.callback()),
             Initialized::<T>::METHOD => Some(self.initialized.callback()),

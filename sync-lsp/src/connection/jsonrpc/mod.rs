@@ -10,9 +10,15 @@ use std::sync::mpsc::Sender;
 
 mod message;
 
+pub(crate) trait RpcResolver: Sized + 'static {
+    type Connection: RpcConnection;
+
+    fn connection(&mut self) -> &mut Self::Connection;
+    fn resolve(&self, method: &str) -> Option<Callback<Self>>;
+}
+
 pub(crate) trait RpcConnection: Sized + 'static {
     fn transport(&mut self) -> &mut Transport;
-    fn resolve(&self, method: &str) -> Option<Callback<Self>>;
     fn take_error(&mut self) -> Option<RpcError>;
     fn log(&mut self, level: Level, message: String);
     fn set_current_request(&mut self, id: Option<MessageID>);
@@ -25,7 +31,7 @@ pub(crate) trait RpcConnection: Sized + 'static {
         { RpcConnectionImpl::peek_notification(self, method) }
 }
 
-pub(crate) enum Callback<T: RpcConnection> {
+pub(crate) enum Callback<T: RpcResolver> {
     Request(Rc<dyn Fn(&mut T, Value) -> Result<Value, JsonError>>),
     Notification(Rc<dyn Fn(&mut T, Value) -> Result<(), JsonError>>),
     Response(Rc<dyn Fn(&mut T, String, Option<Value>) -> Result<(), JsonError>>),
@@ -49,7 +55,7 @@ impl Log for RpcLogger {
     fn flush(&self) {}
 }
 
-impl<T: RpcConnection> Clone for Callback<T> {
+impl<T: RpcResolver> Clone for Callback<T> {
     fn clone(&self) -> Self {
         match self {
             Callback::Request(callback) => Callback::Request(callback.clone()),
@@ -60,7 +66,7 @@ impl<T: RpcConnection> Clone for Callback<T> {
 
 }
 
-impl<T: RpcConnection> Callback<T> {
+impl<T: RpcResolver> Callback<T> {
     pub(crate) fn request<P: DeserializeOwned, R: 'static + Serialize>(callback: impl 'static + Fn(&mut T, P) -> R) -> Self {
         Self::Request(Rc::new(move |server, value| {
             let params = from_value(value)?;
@@ -103,9 +109,9 @@ pub(super) mod RpcConnectionImpl {
     use crate::connection::jsonrpc::message::{Message, MessageID, Version, Error as RpcError};
 
     use super::message::ErrorCode;
-    use super::{RpcConnection, Callback, RpcLogger};
+    use super::{RpcConnection, Callback, RpcLogger, RpcResolver};
 
-    pub(crate) fn serve(mut connection: impl RpcConnection) -> Result<(), Error> {
+    pub(crate) fn serve(mut server: impl RpcResolver) -> Result<(), Error> {
 
         let (sender, receiver) = channel();
         let logger = RpcLogger {
@@ -121,14 +127,14 @@ pub(super) mod RpcConnectionImpl {
         #[cfg(not(debug_assertions))]
         set_max_level(LevelFilter::Info);
 
-        while let Some(message) = recv(&mut connection) {
-            handle(&mut connection, message);
+        while let Some(message) = recv(server.connection()) {
+            handle(&mut server, message);
             while let Ok((level, message)) = receiver.try_recv() {
-                connection.log(level, message);
+                server.connection().log(level, message);
             }
         }
 
-        if let Some(error) = connection.transport().error().take() {
+        if let Some(error) = server.connection().transport().error().take() {
             return Err(error);
         } else {
             Ok(())
@@ -157,15 +163,14 @@ pub(super) mod RpcConnectionImpl {
     }
 
     pub(super) fn request(connection: &mut impl RpcConnection, method: &str, tag: impl Serialize, params: impl Serialize) {
-        let id = MessageID::String(format!("{method}#{}", match to_string(&tag) {
-            Ok(tag) => tag,
-            Err(error) => {
-                error!("Failed to serialize tag for {method} request: {}", error);
-                "{}".to_string()
-            }
-        }));
-
+        
         let message = 'message: {
+            
+            let id = MessageID::String(format!("{method}#{}", match to_string(&tag) {
+                Ok(tag) => tag,
+                Err(error) => break 'message format!("Failed to serialize tag for {method} request: {}", error)
+            }));
+
             if !send(connection, Message::Request {
                 jsonrpc: Version::Current,
                 method: method.to_owned(),
@@ -183,14 +188,7 @@ pub(super) mod RpcConnectionImpl {
             }
         };
 
-        handle(connection, Message::Error {
-            jsonrpc: Version::Current,
-            id,
-            error: RpcError {
-                code: ErrorCode::RequestFailed,
-                message,
-            }
-        });
+        error!("Failed to send request: {message}");
     }
 
     fn recv(connection: &mut impl RpcConnection) -> Option<Message> {
@@ -218,16 +216,16 @@ pub(super) mod RpcConnectionImpl {
         }
     }
 
-    fn handle(connection: &mut impl RpcConnection, message: Message) {
+    fn handle(server: &mut impl RpcResolver, message: Message) {
         match message {
-            Message::Request { id, params, method, .. } => handle_request(connection, method, id, params),
-            Message::Notification { params, method, .. } => handle_notification(connection, method, params),
-            Message::Response { id, result, .. } => handle_result(connection, id, result),
-            Message::Error { id, error, .. } => handle_error(connection, id, error),
+            Message::Request { id, params, method, .. } => handle_request(server, method, id, params),
+            Message::Notification { params, method, .. } => handle_notification(server, method, params),
+            Message::Response { id, result, .. } => handle_result(server, id, result),
+            Message::Error { id, error, .. } => handle_error(server, id, error),
         }
     }
 
-    fn handle_result(connection: &mut impl RpcConnection, id: MessageID, result: Value) {
+    fn handle_result(server: &mut impl RpcResolver, id: MessageID, result: Value) {
         let MessageID::String(id) = id else {
             return error!("Response without request: {id:?}")
         };
@@ -236,7 +234,7 @@ pub(super) mod RpcConnectionImpl {
             return error!("Failed to parse id: {}", id);
         };
 
-        let Some(handler) = connection.resolve(method) else {
+        let Some(handler) = server.resolve(method) else {
             return error!("Response without request: {method}")
         };
 
@@ -245,9 +243,9 @@ pub(super) mod RpcConnectionImpl {
             Callback::Request(..) | Callback::Notification(..) => return error!("{method} is not a response endpoint"),
         };
 
-        let result = handler(connection, tag.to_string(), Some(result));
+        let result = handler(server, tag.to_string(), Some(result));
 
-        if let Some(error) = connection.take_error() {
+        if let Some(error) = server.connection().take_error() {
             return error!("Failed to process {method}#{tag}: {}", error.message);
         }
 
@@ -256,7 +254,7 @@ pub(super) mod RpcConnectionImpl {
         }
     }
 
-    fn handle_error(connection: &mut impl RpcConnection, id: MessageID, error: RpcError) {
+    fn handle_error(server: &mut impl RpcResolver, id: MessageID, error: RpcError) {
         let MessageID::String(id) = id else {
             return error!("Response without request: {id:?}")
         };
@@ -265,7 +263,7 @@ pub(super) mod RpcConnectionImpl {
             return error!("Failed to parse id: {}", id);
         };
 
-        let Some(handler) = connection.resolve(method) else {
+        let Some(handler) = server.resolve(method) else {
             return error!("Response without request: {method}")
         };
 
@@ -275,16 +273,16 @@ pub(super) mod RpcConnectionImpl {
         };
 
         error!("Error({:?}) for {method}#{tag}: {}", error.code, error.message);
-        handler(connection, tag.to_string(), None).ok();
+        handler(server, tag.to_string(), None).ok();
 
-        if let Some(error) = connection.take_error() {
+        if let Some(error) = server.connection().take_error() {
             return error!("Failed to process {method}#{tag}: {}", error.message);
         }
     }
 
-    fn handle_notification(connection: &mut impl RpcConnection, method: String, params: Value) {
+    fn handle_notification(server: &mut impl RpcResolver, method: String, params: Value) {
 
-        let Some(handler) = connection.resolve(method.as_str()) else {
+        let Some(handler) = server.resolve(method.as_str()) else {
             return error!("Method not found: {method}")
         };
 
@@ -293,9 +291,9 @@ pub(super) mod RpcConnectionImpl {
             Callback::Request(..) | Callback::Response(..) => return error!("{method} is not a notification endpoint"),
         };
 
-        let result = handler(connection, params);
+        let result = handler(server, params);
 
-        if let Some(error) = connection.take_error() {
+        if let Some(error) = server.connection().take_error() {
             return error!("Failed to process {method}: {}", error.message);
         }
 
@@ -304,9 +302,9 @@ pub(super) mod RpcConnectionImpl {
         }
     }
 
-    fn handle_request(connection: &mut impl RpcConnection, method: String, id: MessageID, params: Value) {
-        let Some(handler) = connection.resolve(method.as_str()) else {
-            send(connection, Message::Error {
+    fn handle_request(server: &mut impl RpcResolver, method: String, id: MessageID, params: Value) {
+        let Some(handler) = server.resolve(method.as_str()) else {
+            send(server.connection(), Message::Error {
                 jsonrpc: Version::Current,
                 id,
                 error: RpcError {
@@ -321,7 +319,7 @@ pub(super) mod RpcConnectionImpl {
         let handler = match handler {
             Callback::Request(handler) => handler,
             Callback::Notification(..) | Callback::Response(..) => {
-                send(connection, Message::Error {
+                send(server.connection(), Message::Error {
                     jsonrpc: Version::Current,
                     id,
                     error: RpcError {
@@ -334,12 +332,12 @@ pub(super) mod RpcConnectionImpl {
             }
         };
 
-        connection.set_current_request(Some(id.clone()));
-        let result = handler(connection, params);
-        connection.set_current_request(None);
+        server.connection().set_current_request(Some(id.clone()));
+        let result = handler(server, params);
+        server.connection().set_current_request(None);
 
-        if let Some(error) = connection.take_error() {
-            send(connection, Message::Error {
+        if let Some(error) = server.connection().take_error() {
+            send(server.connection(), Message::Error {
                 jsonrpc: Version::Current,
                 id,
                 error
@@ -349,12 +347,12 @@ pub(super) mod RpcConnectionImpl {
         }
 
         match result {
-            Ok(result) => send(connection, Message::Response {
+            Ok(result) => send(server.connection(), Message::Response {
                 jsonrpc: Version::Current,
                 id,
                 result
             }),
-            Err(error) => send(connection, Message::Error {
+            Err(error) => send(server.connection(), Message::Error {
                 jsonrpc: Version::Current,
                 id,
                 error: RpcError {

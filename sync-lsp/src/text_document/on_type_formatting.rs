@@ -1,5 +1,5 @@
 use crate::TypeProvider;
-use crate::{Connection, connection::Endpoint};
+use crate::{Server, connection::Endpoint};
 use crate::connection::Callback;
 use super::formatting::FormattingOptions;
 use super::{TextDocumentIdentifer, TextEdit, Position};
@@ -31,10 +31,10 @@ impl DocumentOnTypeFormattingOptions {
     }
 }
 
-impl<T: TypeProvider> Connection<T> {
-    pub fn on_type_formatting(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer, Position, String, FormattingOptions) -> Vec<TextEdit>) {
-        self.text_document.on_type_formatting.set_callback(Callback::request(move |connection, params: DocumentOnTypeFormattingParams | {
-            callback(connection, params.text_document, params.position, params.ch, params.options)
+impl<T: TypeProvider> Server<T> {
+    pub fn on_type_formatting(&mut self, callback: fn(&mut Server<T>, TextDocumentIdentifer, Position, String, FormattingOptions) -> Vec<TextEdit>) {
+        self.text_document.on_type_formatting.set_callback(Callback::request(move |server, params: DocumentOnTypeFormattingParams | {
+            callback(server, params.text_document, params.position, params.ch, params.options)
         }))
     }
     

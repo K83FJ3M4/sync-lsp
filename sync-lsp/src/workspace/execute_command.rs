@@ -1,5 +1,5 @@
 use crate::TypeProvider;
-use crate::{Connection, connection::Endpoint};
+use crate::{Server, connection::Endpoint};
 use crate::connection::Callback;
 use serde::{Serialize, Serializer, Deserializer, Deserialize};
 use serde_json::Value;
@@ -32,10 +32,10 @@ impl ExecuteCommandOptions {
     }
 }
 
-impl<T: TypeProvider> Connection<T> {
-    pub fn on_execute_command<R: 'static + Serialize>(&mut self, callback: fn(&mut Connection<T>, T::Command) -> R) {
-        self.workspace.execute_command.set_callback(Callback::request(move |connection, params: CommandContainer<T::Command>| {
-            callback(connection, params.0)
+impl<T: TypeProvider> Server<T> {
+    pub fn on_execute_command<R: 'static + Serialize>(&mut self, callback: fn(&mut Server<T>, T::Command) -> R) {
+        self.workspace.execute_command.set_callback(Callback::request(move |server, params: CommandContainer<T::Command>| {
+            callback(server, params.0)
         }))
     }
 }

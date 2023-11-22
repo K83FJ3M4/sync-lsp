@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use crate::text_document::{DocumentUri, TextEdit};
 use serde::{Serialize, Deserialize};
 use crate::connection::{RpcConnection, Callback};
-use crate::{Connection, TypeProvider};
+use crate::{Server, Connection, TypeProvider};
 
 #[derive(Serialize, Debug, Default)]
 pub struct WorkspaceEdit {
@@ -10,7 +10,7 @@ pub struct WorkspaceEdit {
 }
 
 pub(super) struct ApplyWorkspaceRequest<T: TypeProvider> {
-    callback: Callback<Connection<T>>
+    callback: Callback<Server<T>>
 }
 
 #[derive(Serialize)]
@@ -31,8 +31,10 @@ impl<T: TypeProvider> Connection<T> {
             ApplyWorkspaceEditParams { edit }
         );
     }
+}
 
-    pub fn on_apply_edit_response(&mut self, f: fn(&mut Connection<T>, T::ApplyEditData, ApplyWorkspaceEditResponse)) {
+impl<T: TypeProvider> Server<T> {
+    pub fn on_apply_edit_response(&mut self, f: fn(&mut Server<T>, T::ApplyEditData, ApplyWorkspaceEditResponse)) {
         self.workspace.apply_edit.callback = Callback::response(f);
     }
 }
@@ -48,7 +50,7 @@ impl<T: TypeProvider> Default for ApplyWorkspaceRequest<T> {
 impl<T: TypeProvider> ApplyWorkspaceRequest<T> {
     pub(super) const METHOD: &'static str = "workspace/applyEdit";
 
-    pub(crate) fn callback(&self) -> Callback<Connection<T>> {
+    pub(crate) fn callback(&self) -> Callback<Server<T>> {
         self.callback.clone()
     }
 }

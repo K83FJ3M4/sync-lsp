@@ -1,5 +1,5 @@
 use crate::TypeProvider;
-use crate::{Connection, connection::Endpoint};
+use crate::{Server, connection::Endpoint};
 use crate::connection::Callback;
 use serde::Serialize;
 use super::{TextDocumentIdentifer, TextDocumentPositionParams, Range, Position};
@@ -33,10 +33,10 @@ impl HoverOptions {
     }
 }
 
-impl<T: TypeProvider> Connection<T> {
-    pub fn on_hover(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer, Position) -> Hover) {
-        self.text_document.hover.set_callback(Callback::request(move |connection, params: TextDocumentPositionParams| {
-            callback(connection, params.text_document, params.position)
+impl<T: TypeProvider> Server<T> {
+    pub fn on_hover(&mut self, callback: fn(&mut Server<T>, TextDocumentIdentifer, Position) -> Hover) {
+        self.text_document.hover.set_callback(Callback::request(move |server, params: TextDocumentPositionParams| {
+            callback(server, params.text_document, params.position)
         }))
     }
 }

@@ -1,6 +1,6 @@
 use crate::TypeProvider;
 use crate::workspace::symbol::SymbolInformation;
-use crate::{Connection, connection::Endpoint};
+use crate::{Server, connection::Endpoint};
 use crate::connection::Callback;
 use super::TextDocumentIdentifer;
 use serde::Deserialize;
@@ -23,10 +23,10 @@ impl DocumentSymbolOptions {
     }
 }
 
-impl<T: TypeProvider> Connection<T> {
-    pub fn on_document_symbol(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer) -> Vec<SymbolInformation>) {
-        self.text_document.document_symbol.set_callback(Callback::request(move |connection, params: DocumentSymbolParams| {
-            callback(connection, params.text_document)
+impl<T: TypeProvider> Server<T> {
+    pub fn on_document_symbol(&mut self, callback: fn(&mut Server<T>, TextDocumentIdentifer) -> Vec<SymbolInformation>) {
+        self.text_document.document_symbol.set_callback(Callback::request(move |server, params: DocumentSymbolParams| {
+            callback(server, params.text_document)
         }))
     }
 }

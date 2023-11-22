@@ -1,6 +1,6 @@
 use sync_lsp::window::MessageType;
 use sync_lsp::window::show_message_request::MessageActionItem;
-use sync_lsp::{Transport, Connection, TypeProvider};
+use sync_lsp::{Transport, TypeProvider, Server};
 use sync_lsp::workspace::execute_command::{Command as CommandDescriptor};
 use log::info;
 
@@ -16,11 +16,11 @@ impl TypeProvider for LanguageServer {
 
 fn main() {
     let transport = Transport::stdio();
-    let mut connection = Connection::new(LanguageServer, transport);
+    let mut server = Server::new(LanguageServer, transport);
     
-    connection.on_code_lens(|connection, document| {
+    server.on_code_lens(|server, document| {
         std::thread::sleep(std::time::Duration::from_secs(1));
-        if connection.cancelled() {
+        if server.connection.cancelled() {
             info!("Cancelled: {document:?}");
         } else {
             info!("Not cancelled: {document:?}");
@@ -28,9 +28,9 @@ fn main() {
         Vec::new()
     });
 
-    connection.on_open(|connection, params| {
+    server.on_open(|server, params| {
         info!("Open: {:?}", params);
-        connection.show_message_request(MessageType::Info, "Choose an item 1".to_string(), vec![
+        server.connection.show_message_request(MessageType::Info, "Choose an item 1".to_string(), vec![
             MessageActionItem {
                 title: "Item 1".to_string(),
                 data: 1
@@ -42,9 +42,9 @@ fn main() {
         ]);
     });
 
-    connection.on_show_message_response(|_, response| {
+    server.on_show_message_response(|_, response| {
         info!("Show message response: {:?}", response);
     });
 
-    connection.serve().unwrap();
+    server.serve().unwrap();
 }

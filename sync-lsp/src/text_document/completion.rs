@@ -1,5 +1,5 @@
 use crate::workspace::execute_command::{serialize_opt_command, deserialize_opt_command};
-use crate::{Connection, TypeProvider};
+use crate::{Server, TypeProvider};
 use crate::connection::{Callback, Endpoint};
 use serde::{Serialize, Deserialize};
 use serde_repr::{Serialize_repr, Deserialize_repr};
@@ -109,16 +109,16 @@ impl ResolveCompletionOptions {
     }
 }
 
-impl<T: TypeProvider> Connection<T> {
-    pub fn on_completion(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer, Position) -> CompletionList<T>) {
-        self.text_document.completion.set_callback(Callback::request(move |connection, params: TextDocumentPositionParams| {
-            callback(connection, params.text_document, params.position)
+impl<T: TypeProvider> Server<T> {
+    pub fn on_completion(&mut self, callback: fn(&mut Server<T>, TextDocumentIdentifer, Position) -> CompletionList<T>) {
+        self.text_document.completion.set_callback(Callback::request(move |server, params: TextDocumentPositionParams| {
+            callback(server, params.text_document, params.position)
         }));
     }
 
-    pub fn on_completion_resolve(&mut self, callback: fn(&mut Connection<T>, CompletionItem<T>) -> CompletionItem<T>) {
-        self.text_document.resolve_completion.set_callback(Callback::request(move |connection, item| {
-            callback(connection, item)
+    pub fn on_completion_resolve(&mut self, callback: fn(&mut Server<T>, CompletionItem<T>) -> CompletionItem<T>) {
+        self.text_document.resolve_completion.set_callback(Callback::request(move |server, item| {
+            callback(server, item)
         }));
     }
 

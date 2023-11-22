@@ -1,5 +1,5 @@
 use crate::TypeProvider;
-use crate::{Connection, connection::Endpoint};
+use crate::{Server, connection::Endpoint};
 use crate::connection::Callback;
 use super::{TextDocumentIdentifer, TextDocumentPositionParams, Location, Position};
 
@@ -15,10 +15,10 @@ impl DefinitionOptions {
     }
 }
 
-impl<T: TypeProvider> Connection<T> {
-    pub fn on_definition(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer, Position) -> Vec<Location>) {
-        self.text_document.definition.set_callback(Callback::request(move |connection, params: TextDocumentPositionParams | {
-            callback(connection, params.text_document, params.position)
+impl<T: TypeProvider> Server<T> {
+    pub fn on_definition(&mut self, callback: fn(&mut Server<T>, TextDocumentIdentifer, Position) -> Vec<Location>) {
+        self.text_document.definition.set_callback(Callback::request(move |server, params: TextDocumentPositionParams | {
+            callback(server, params.text_document, params.position)
         }))
     }
 }

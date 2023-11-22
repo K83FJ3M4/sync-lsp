@@ -1,6 +1,6 @@
 use serde_repr::Deserialize_repr;
 use serde::Deserialize;
-use crate::{Connection, TypeProvider};
+use crate::{Server, TypeProvider};
 use crate::connection::{Endpoint, Callback};
 
 #[derive(Default, Clone)]
@@ -26,10 +26,10 @@ struct DidChangeWatchedFilesParams {
     changes: Vec<FileEvent>
 }
 
-impl<T: TypeProvider> Connection<T> {
-    pub fn on_change_watched_files(&mut self, callback: fn (&mut Connection<T>, Vec<FileEvent>)) {
-        self.workspace.did_change_watched_files.set_callback(Callback::notification(move |connection, params: DidChangeWatchedFilesParams| {
-            callback(connection, params.changes)
+impl<T: TypeProvider> Server<T> {
+    pub fn on_change_watched_files(&mut self, callback: fn (&mut Server<T>, Vec<FileEvent>)) {
+        self.workspace.did_change_watched_files.set_callback(Callback::notification(move |server, params: DidChangeWatchedFilesParams| {
+            callback(server, params.changes)
         }))
     }
 }

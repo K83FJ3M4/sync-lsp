@@ -1,6 +1,6 @@
 use crate::TypeProvider;
 use crate::connection::Endpoint;
-use crate::{connection::Callback, Connection};
+use crate::{connection::Callback, Server};
 use self::code_action::CodeActionOptions;
 use self::code_lens::{CodeLensOptions, CodeLensResolveOptions};
 use self::completion::{CompletionOptions, ResolveCompletionOptions};
@@ -136,7 +136,7 @@ pub(crate) struct TextDocumentSyncOptions {
 }
 
 impl<T: TypeProvider> TextDocumentService<T> {
-    pub(super) fn resolve(&self, method: &str) -> Option<Callback<Connection<T>>> {
+    pub(super) fn resolve(&self, method: &str) -> Option<Callback<Server<T>>> {
         match method {
             DidOpenOptions::METHOD => Some(self.did_open.callback()),
             DidChangeOptions::METHOD => Some(self.did_change.callback()),
@@ -198,7 +198,7 @@ impl<T: TypeProvider> Default for TextDocumentService<T> {
     }
 }
 
-impl<T: TypeProvider> Connection<T> {
+impl<T: TypeProvider> Server<T> {
     pub fn set_document_sync(&mut self, sync_kind: TextDocumentSyncKind) {
         self.text_document.sync_kind = sync_kind;
     }

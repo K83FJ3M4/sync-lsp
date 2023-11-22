@@ -1,4 +1,4 @@
-use crate::{Connection, TypeProvider};
+use crate::{Server, TypeProvider};
 use crate::connection::{Callback, Endpoint};
 use serde::Deserialize;
 use serde_repr::Deserialize_repr;
@@ -31,10 +31,10 @@ impl WillSaveOptions {
     }
 }
 
-impl<T: TypeProvider> Connection<T> {
-    pub fn on_will_save(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer, TextDocumentSaveReason)) {
-        self.text_document.will_save.set_callback(Callback::notification(move |connection, params: WillSaveTextDocumentParams| {
-            callback(connection, params.text_document, params.reason)
+impl<T: TypeProvider> Server<T> {
+    pub fn on_will_save(&mut self, callback: fn(&mut Server<T>, TextDocumentIdentifer, TextDocumentSaveReason)) {
+        self.text_document.will_save.set_callback(Callback::notification(move |server, params: WillSaveTextDocumentParams| {
+            callback(server, params.text_document, params.reason)
         }))
     }
 }

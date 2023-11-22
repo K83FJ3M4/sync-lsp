@@ -1,6 +1,6 @@
 use crate::TypeProvider;
 use crate::text_document::Location;
-use crate::{Connection, connection::Endpoint};
+use crate::{Server, connection::Endpoint};
 use crate::connection::Callback;
 use serde::{Deserialize, Serialize};
 use serde_repr::Serialize_repr;
@@ -55,10 +55,10 @@ impl SymbolOptions {
     }
 }
 
-impl<T: TypeProvider> Connection<T> {
-    pub fn on_symbol(&mut self, callback: fn(&mut Connection<T>, String) -> Vec<SymbolInformation>) {
-        self.workspace.symbol.set_callback(Callback::request(move |connection, params: WorkspaceSymbolParams| {
-            callback(connection, params.query)
+impl<T: TypeProvider> Server<T> {
+    pub fn on_symbol(&mut self, callback: fn(&mut Server<T>, String) -> Vec<SymbolInformation>) {
+        self.workspace.symbol.set_callback(Callback::request(move |server, params: WorkspaceSymbolParams| {
+            callback(server, params.query)
         }))
     }
 }

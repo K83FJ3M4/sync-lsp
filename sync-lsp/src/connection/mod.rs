@@ -1,4 +1,5 @@
 use std::io::Error;
+use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
 use jsonrpc::RpcError;
 
@@ -23,50 +24,42 @@ mod jsonrpc;
 mod transport;
 mod lifecycle;
 
-pub struct Connection<T: TypeProvider> {
+pub struct Server<T: TypeProvider> {
+    pub connection: Connection<T>,
     state: T,
-    current_request: Option<MessageID>,
-    transport: Transport,
-    error: Option<RpcError>,
     process_id: Option<u32>,
     root_uri: Option<String>,
     initialization_options: Option<T::InitializeOptions>,
+    
     lifecycle: LifecycleService<T>,
     pub(crate) window: WindowService<T>,
     pub(crate) text_document: TextDocumentService<T>,
     pub(crate) workspace: WorkspaceService<T>
 }
 
+pub struct Connection<T: TypeProvider> {
+    transport: Transport,
+    error: Option<RpcError>,
+    current_request: Option<MessageID>,
+    marker: PhantomData<T>
+}
+
 #[derive(Clone, Copy, Debug, Default)]
 pub struct UnitType;
 
-impl<T: TypeProvider> Connection<T> {
-    pub fn new(state: T, transport: Transport) -> Connection<T> {
-        Connection {
+impl<T: TypeProvider> Server<T> {
+    pub fn new(state: T, transport: Transport) -> Server<T> {
+        Server {
             state,
-            transport,
-            error: None,
+            connection: Connection::new(transport),
             process_id: None,
             root_uri: None,
             initialization_options: None,
-            current_request: None,
             lifecycle: Default::default(),
             window: Default::default(),
             text_document: Default::default(),
             workspace: Default::default()
         }
-    }
-
-    pub fn serve(self) -> Result<(), Error> {
-        RpcConnectionImpl::serve(self)
-    }
-
-    pub fn error<R: Default>(&mut self, code: ErrorCode, message: String) -> R {
-        self.error = Some(RpcError {
-            code,
-            message
-        });
-        R::default()
     }
 
     pub fn process_id(&self) -> Option<u32> {
@@ -79,6 +72,33 @@ impl<T: TypeProvider> Connection<T> {
 
     pub fn initialization_options(&self) -> Option<&T::InitializeOptions> {
         self.initialization_options.as_ref()
+    }
+
+    pub fn split(&mut self) -> (&mut Connection<T>, &mut T) {
+        (&mut self.connection, &mut self.state)
+    }
+
+    pub fn serve(self) -> Result<(), Error> {
+        RpcConnectionImpl::serve(self)
+    }
+}
+
+impl<T: TypeProvider> Connection<T> {
+    fn new(transport: Transport) -> Connection<T> {
+        Connection {
+            transport,
+            error: None,
+            current_request: None,
+            marker: PhantomData
+        }
+    }
+
+    pub fn error<R: Default>(&mut self, code: ErrorCode, message: String) -> R {
+        self.error = Some(RpcError {
+            code,
+            message
+        });
+        R::default()
     }
 
     pub fn cancelled(&mut self) -> bool {
@@ -96,7 +116,7 @@ impl<T: TypeProvider> Connection<T> {
     }
 }
 
-impl<T: TypeProvider> Deref for Connection<T> {
+impl<T: TypeProvider> Deref for Server<T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -104,7 +124,7 @@ impl<T: TypeProvider> Deref for Connection<T> {
     }
 }
 
-impl<T: TypeProvider> DerefMut for Connection<T> {
+impl<T: TypeProvider> DerefMut for Server<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.state
     }

@@ -1,5 +1,5 @@
 use crate::TypeProvider;
-use crate::{Connection, connection::Endpoint};
+use crate::{Server, connection::Endpoint};
 use crate::connection::Callback;
 use serde::{Deserialize, Serialize};
 use super::{TextDocumentIdentifer, Range};
@@ -48,16 +48,16 @@ impl CodeLensResolveOptions {
     }
 }
 
-impl<T: TypeProvider> Connection<T> {
-    pub fn on_code_lens(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer) -> Vec<CodeLens<T::Command, T::CodeLensData>>) {
-        self.text_document.code_lens.set_callback(Callback::request(move |connection, params: CodeLensParams| {
-            callback(connection, params.text_document)
+impl<T: TypeProvider> Server<T> {
+    pub fn on_code_lens(&mut self, callback: fn(&mut Server<T>, TextDocumentIdentifer) -> Vec<CodeLens<T::Command, T::CodeLensData>>) {
+        self.text_document.code_lens.set_callback(Callback::request(move |server, params: CodeLensParams| {
+            callback(server, params.text_document)
         }));
     }
 
-    pub fn on_code_lens_resolve(&mut self, callback: fn(&mut Connection<T>, CodeLens<T::Command, T::CodeLensData>) -> CodeLens<T::Command, T::CodeLensData>) {
-        self.text_document.resolve_code_lens.set_callback(Callback::request(move |connection, params| {
-            callback(connection, params)
+    pub fn on_code_lens_resolve(&mut self, callback: fn(&mut Server<T>, CodeLens<T::Command, T::CodeLensData>) -> CodeLens<T::Command, T::CodeLensData>) {
+        self.text_document.resolve_code_lens.set_callback(Callback::request(move |server, params| {
+            callback(server, params)
         }));
     }
 }

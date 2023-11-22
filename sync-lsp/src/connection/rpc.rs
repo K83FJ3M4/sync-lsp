@@ -1,12 +1,27 @@
 use log::Level;
 
 use crate::window::MessageType;
-use crate::{Connection, TypeProvider};
-use super::jsonrpc::{RpcConnection, Callback, RpcError, MessageID};
+use crate::{Connection, TypeProvider, Server};
+use super::jsonrpc::{RpcConnection, Callback, RpcError, MessageID, RpcResolver};
 
 pub(crate) struct Endpoint<T: TypeProvider, O: Clone + Default> {
-    callback: Callback<Connection<T>>,
+    callback: Callback<Server<T>>,
     options: O
+}
+
+impl<T: TypeProvider> RpcResolver for Server<T> {
+    type Connection = Connection<T>;
+
+    fn connection(&mut self) -> &mut Self::Connection {
+        &mut self.connection
+    }
+
+    fn resolve(&self, method: &str) -> Option<Callback<Self>> {
+        self.lifecycle.resolve(method)
+            .or(self.window.resolve(method))
+            .or(self.text_document.resolve(method))
+            .or(self.workspace.resolve(method))
+    }
 }
 
 impl<T: TypeProvider> RpcConnection for Connection<T> {
@@ -30,20 +45,13 @@ impl<T: TypeProvider> RpcConnection for Connection<T> {
         self.log_message(r#type, message)
     }
 
-    fn resolve(&self, method: &str) -> Option<Callback<Self>> {
-        self.lifecycle.resolve(method)
-            .or(self.window.resolve(method))
-            .or(self.text_document.resolve(method))
-            .or(self.workspace.resolve(method))
-    }
-
     fn set_current_request(&mut self, id: Option<MessageID>) {
         self.current_request = id;
     }
 }
 
 impl<T: TypeProvider, O: Clone + Default> Endpoint<T, O> {
-    pub(crate) fn new(callback: Callback<Connection<T>>,) -> Self {
+    pub(crate) fn new(callback: Callback<Server<T>>,) -> Self {
         Endpoint {
             callback,
             options: O::default()
@@ -54,11 +62,11 @@ impl<T: TypeProvider, O: Clone + Default> Endpoint<T, O> {
         &mut self.options
     }
 
-    pub(crate) fn set_callback(&mut self, callback: Callback<Connection<T>>) {
+    pub(crate) fn set_callback(&mut self, callback: Callback<Server<T>>) {
         self.callback = callback;
     }
 
-    pub(crate) fn callback(&self) -> Callback<Connection<T>> {
+    pub(crate) fn callback(&self) -> Callback<Server<T>> {
         self.callback.clone()
     }
 

@@ -1,4 +1,4 @@
-use crate::{Connection, TypeProvider};
+use crate::{Server, TypeProvider};
 use crate::connection::{Callback, Endpoint};
 use serde::Deserialize;
 use super::TextDocumentIdentifer;
@@ -27,10 +27,10 @@ impl DidSaveOptions {
     }
 }
 
-impl<T: TypeProvider> Connection<T> {
-    pub fn on_save(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer, Option<String>)) {
-        self.text_document.did_save.set_callback(Callback::notification(move |connection, params: DidSaveTextDocumentParams| {
-            callback(connection, params.text_document, params.text)
+impl<T: TypeProvider> Server<T> {
+    pub fn on_save(&mut self, callback: fn(&mut Server<T>, TextDocumentIdentifer, Option<String>)) {
+        self.text_document.did_save.set_callback(Callback::notification(move |server, params: DidSaveTextDocumentParams| {
+            callback(server, params.text_document, params.text)
         }))
     }
 

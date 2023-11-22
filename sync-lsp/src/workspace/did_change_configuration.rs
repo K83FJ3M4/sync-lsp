@@ -1,4 +1,4 @@
-use crate::{Connection, TypeProvider};
+use crate::{Server, TypeProvider};
 use crate::connection::{Callback, Endpoint};
 use serde::Deserialize;
 use serde_json::Value;
@@ -21,10 +21,10 @@ impl DidChangeConfigurationOptions {
     }
 }
 
-impl<T: TypeProvider> Connection<T> {
-    pub fn on_change_configuration(&mut self, callback: fn(&mut Connection<T>, T::Configuration)) {
-        self.workspace.did_change_configuration.set_callback(Callback::notification(move |connection, params: DidChangeConfigurationParams<T::Configuration>| {
-            callback(connection, params.settings)
+impl<T: TypeProvider> Server<T> {
+    pub fn on_change_configuration(&mut self, callback: fn(&mut Server<T>, T::Configuration)) {
+        self.workspace.did_change_configuration.set_callback(Callback::notification(move |server, params: DidChangeConfigurationParams<T::Configuration>| {
+            callback(server, params.settings)
         }))
     }
 }

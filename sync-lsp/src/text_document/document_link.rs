@@ -1,5 +1,5 @@
 use crate::TypeProvider;
-use crate::{Connection, connection::Endpoint};
+use crate::{Server, connection::Endpoint};
 use crate::connection::Callback;
 use serde::{Deserialize, Serialize};
 use super::{TextDocumentIdentifer, Range, DocumentUri};
@@ -43,16 +43,16 @@ impl DocumentLinkResolveOptions {
     }
 }
 
-impl<T: TypeProvider> Connection<T> {
-    pub fn on_document_link(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer) -> Vec<DocumentLink>) {
-        self.text_document.document_link.set_callback(Callback::request(move |connection, params: DocumentLinkParams| {
-            callback(connection, params.text_document)
+impl<T: TypeProvider> Server<T> {
+    pub fn on_document_link(&mut self, callback: fn(&mut Server<T>, TextDocumentIdentifer) -> Vec<DocumentLink>) {
+        self.text_document.document_link.set_callback(Callback::request(move |server, params: DocumentLinkParams| {
+            callback(server, params.text_document)
         }));
     }
 
-    pub fn on_document_link_resolve(&mut self, callback: fn(&mut Connection<T>, DocumentLink) -> DocumentLink) {
-        self.text_document.resolve_document_link.set_callback(Callback::request(move |connection, params| {
-            callback(connection, params)
+    pub fn on_document_link_resolve(&mut self, callback: fn(&mut Server<T>, DocumentLink) -> DocumentLink) {
+        self.text_document.resolve_document_link.set_callback(Callback::request(move |server, params| {
+            callback(server, params)
         }));
     }
 }

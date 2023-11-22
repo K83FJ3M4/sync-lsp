@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 use std::mem::replace;
 use serde::{Serialize, Deserialize};
-use crate::{Connection, TypeProvider};
+use crate::{Connection, Server, TypeProvider};
 use crate::connection::{RpcConnection, Callback};
 
 use super::MessageType;
 
 pub(super) struct ShowMessageRequest<T: TypeProvider> {
-    callback: Callback<Connection<T>>
+    callback: Callback<Server<T>>
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -48,8 +48,10 @@ impl<T: TypeProvider> Connection<T> {
             }
         );
     }
+}
 
-    pub fn on_show_message_response(&mut self, f: fn(&mut Connection<T>, MessageActionItem<T::ShowMessageRequestData>)) {
+impl<T: TypeProvider> Server<T> {
+    pub fn on_show_message_response(&mut self, f: fn(&mut Server<T>, MessageActionItem<T::ShowMessageRequestData>)) {
         self.window.show_message_request.callback = Callback::response(move |connection, mut tag: HashMap<String, T::ShowMessageRequestData>, params: Option<MessageActionItem<T::ShowMessageRequestData>>| {
             if let Some(mut action) = params {
                 action.data = tag.remove(action.title.as_str()).unwrap_or_default();
@@ -70,7 +72,7 @@ impl<T: TypeProvider> Default for ShowMessageRequest<T> {
 impl<T: TypeProvider> ShowMessageRequest<T> {
     pub(super) const METHOD: &'static str = "window/showMessageRequest";
 
-    pub(crate) fn callback(&self) -> Callback<Connection<T>> {
+    pub(crate) fn callback(&self) -> Callback<Server<T>> {
         self.callback.clone()
     }
 }

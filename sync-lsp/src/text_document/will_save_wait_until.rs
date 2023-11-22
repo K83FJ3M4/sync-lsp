@@ -1,5 +1,5 @@
 use crate::TypeProvider;
-use crate::{Connection, connection::Endpoint};
+use crate::{Server, connection::Endpoint};
 use crate::connection::Callback;
 use serde::Deserialize;
 use super::will_save::TextDocumentSaveReason;
@@ -24,10 +24,10 @@ impl WillSaveWaitUntilOptions {
     }
 }
 
-impl<T: TypeProvider> Connection<T> {
-    pub fn on_will_save_wait_until(&mut self, callback: fn(&mut Connection<T>, TextDocumentIdentifer, TextDocumentSaveReason) -> Vec<TextEdit>) {
-        self.text_document.will_save_wait_until.set_callback(Callback::request(move |connection, params: WillSaveWaitUntilTextDocumentParams| {
-            callback(connection, params.text_document, params.reason)
+impl<T: TypeProvider> Server<T> {
+    pub fn on_will_save_wait_until(&mut self, callback: fn(&mut Server<T>, TextDocumentIdentifer, TextDocumentSaveReason) -> Vec<TextEdit>) {
+        self.text_document.will_save_wait_until.set_callback(Callback::request(move |server, params: WillSaveWaitUntilTextDocumentParams| {
+            callback(server, params.text_document, params.reason)
         }))
     }
 }
