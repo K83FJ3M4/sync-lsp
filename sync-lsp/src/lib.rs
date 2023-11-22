@@ -1,4 +1,4 @@
-pub use connection::{Transport, Connection, UnitType, Server};
+pub use connection::{Transport, Connection, UnitType, Server, CancellationToken};
 pub use sync_lsp_derive::type_provider;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
@@ -23,8 +23,6 @@ pub trait TypeProvider: 'static {
 
 //TODO
 //Implement dynamic registration support
-//support cancellation of the server side
-//implement client capabilities
 
 //Add Documentation
 //Add Readme

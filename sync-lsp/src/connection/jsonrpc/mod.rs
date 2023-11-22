@@ -25,7 +25,7 @@ pub(crate) trait RpcConnection: Sized + 'static {
 
     fn notify(&mut self, method: &str, params: impl Serialize)
         { RpcConnectionImpl::notify(self, method, params) }
-    fn request(&mut self, method: &str, tag: impl Serialize, params: impl Serialize)
+    fn request(&mut self, method: &str, tag: impl Serialize, params: impl Serialize) -> Option<MessageID>
         { RpcConnectionImpl::request(self, method, tag, params) }
     fn peek_notification<T: DeserializeOwned>(&mut self, method: &str) -> Option<T>
         { RpcConnectionImpl::peek_notification(self, method) }
@@ -162,7 +162,7 @@ pub(super) mod RpcConnectionImpl {
         });
     }
 
-    pub(super) fn request(connection: &mut impl RpcConnection, method: &str, tag: impl Serialize, params: impl Serialize) {
+    pub(super) fn request(connection: &mut impl RpcConnection, method: &str, tag: impl Serialize, params: impl Serialize) -> Option<MessageID> {
         
         let message = 'message: {
             
@@ -184,11 +184,12 @@ pub(super) mod RpcConnectionImpl {
             }) {
                 break 'message "A io error occured during the request".to_string()
             } else {
-                return
+                return Some(id.clone())
             }
         };
 
         error!("Failed to send request: {message}");
+        None
     }
 
     fn recv(connection: &mut impl RpcConnection) -> Option<Message> {
@@ -272,7 +273,10 @@ pub(super) mod RpcConnectionImpl {
             Callback::Request(..) | Callback::Notification(..) => return error!("{method} is not a response endpoint"),
         };
 
-        error!("Error({:?}) for {method}#{tag}: {}", error.code, error.message);
+        if error.code != ErrorCode::RequestCancelled {
+            error!("Error({:?}) for {method}#{tag}: {}", error.code, error.message);
+        }
+        
         handler(server, tag.to_string(), None).ok();
 
         if let Some(error) = server.connection().take_error() {

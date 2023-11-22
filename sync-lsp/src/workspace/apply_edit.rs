@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use crate::text_document::{DocumentUri, TextEdit};
 use serde::{Serialize, Deserialize};
-use crate::connection::{RpcConnection, Callback};
+use crate::connection::{RpcConnection, Callback, CancellationToken};
 use crate::{Server, Connection, TypeProvider};
 
 #[derive(Serialize, Debug, Default)]
@@ -24,12 +24,12 @@ pub struct ApplyWorkspaceEditResponse {
 }
 
 impl<T: TypeProvider> Connection<T> {
-    pub fn apply_edit(&mut self, tag: T::ApplyEditData, edit: WorkspaceEdit) {
+    pub fn apply_edit(&mut self, tag: T::ApplyEditData, edit: WorkspaceEdit) -> Option<CancellationToken> {
         self.request(
             ApplyWorkspaceRequest::<T>::METHOD,
             tag,
             ApplyWorkspaceEditParams { edit }
-        );
+        ).map(|id| id.into())
     }
 }
 

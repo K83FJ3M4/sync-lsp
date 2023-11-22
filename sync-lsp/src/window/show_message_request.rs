@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::mem::replace;
 use serde::{Serialize, Deserialize};
 use crate::{Connection, Server, TypeProvider};
-use crate::connection::{RpcConnection, Callback};
+use crate::connection::{RpcConnection, Callback, CancellationToken};
 
 use super::MessageType;
 
@@ -30,7 +30,7 @@ struct ShowMessageRequestParams<T: Default> {
 }
 
 impl<T: TypeProvider> Connection<T> {
-    pub fn show_message_request(&mut self, r#type: MessageType, message: String, mut actions: Vec<MessageActionItem<T::ShowMessageRequestData>>) {
+    pub fn show_message_request(&mut self, r#type: MessageType, message: String, mut actions: Vec<MessageActionItem<T::ShowMessageRequestData>>) -> Option<CancellationToken> {
         self.request(
             ShowMessageRequest::<T>::METHOD,
             {
@@ -46,7 +46,7 @@ impl<T: TypeProvider> Connection<T> {
                 message,
                 actions
             }
-        );
+        ).map(|id| id.into())
     }
 }
 

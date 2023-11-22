@@ -12,7 +12,7 @@ pub(crate) enum MessageID {
     Null
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 pub(crate) struct CancelParams {
     pub(crate) id: MessageID
 }
@@ -36,7 +36,7 @@ pub(crate) struct Error {
 }
 
 #[repr(i32)]
-#[derive(Serialize_repr, Deserialize_repr, Debug)]
+#[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq)]
 pub enum ErrorCode {
 	// Defined by initialize
 	UnknownProtocolVersion = 1,

@@ -47,6 +47,9 @@ pub struct Connection<T: TypeProvider> {
 #[derive(Clone, Copy, Debug, Default)]
 pub struct UnitType;
 
+#[derive(Clone)]
+pub struct CancellationToken(MessageID);
+
 impl<T: TypeProvider> Server<T> {
     pub fn new(state: T, transport: Transport) -> Server<T> {
         Server {
@@ -101,6 +104,12 @@ impl<T: TypeProvider> Connection<T> {
         R::default()
     }
 
+    pub fn cancel(&mut self, token: CancellationToken) {
+        self.notify("$/cancelRequest", CancelParams {
+            id: token.0
+        })
+    }
+
     pub fn cancelled(&mut self) -> bool {
         let Some(id) = self.current_request.clone() else { return false; };
         while let Some(params) = self.peek_notification::<CancelParams>("$/cancelRequest") {
@@ -140,5 +149,11 @@ impl<'a> Deserialize<'a> for UnitType {
     fn deserialize<D: Deserializer<'a>>(deserializer: D) -> Result<Self, D::Error> {
         u32::deserialize(deserializer)
             .map(|_| UnitType)
+    }
+}
+
+impl From<MessageID> for CancellationToken {
+    fn from(id: MessageID) -> Self {
+        CancellationToken(id)
     }
 }

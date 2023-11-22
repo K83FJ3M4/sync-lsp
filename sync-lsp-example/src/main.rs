@@ -17,20 +17,10 @@ impl TypeProvider for LanguageServer {
 fn main() {
     let transport = Transport::stdio();
     let mut server = Server::new(LanguageServer, transport);
-    
-    server.on_code_lens(|server, document| {
-        std::thread::sleep(std::time::Duration::from_secs(1));
-        if server.connection.cancelled() {
-            info!("Cancelled: {document:?}");
-        } else {
-            info!("Not cancelled: {document:?}");
-        }
-        Vec::new()
-    });
 
     server.on_open(|server, params| {
         info!("Open: {:?}", params);
-        server.connection.show_message_request(MessageType::Info, "Choose an item 1".to_string(), vec![
+        let token = server.connection.show_message_request(MessageType::Info, "Choose an item 1".to_string(), vec![
             MessageActionItem {
                 title: "Item 1".to_string(),
                 data: 1
@@ -39,7 +29,10 @@ fn main() {
                 title: "Item 1".to_string(),
                 data: 2
             },
-        ]);
+        ]).unwrap();
+
+        std::thread::sleep(std::time::Duration::from_secs(1));
+        server.connection.cancel(token);
     });
 
     server.on_show_message_response(|_, response| {
