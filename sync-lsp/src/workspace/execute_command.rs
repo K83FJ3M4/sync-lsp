@@ -70,6 +70,26 @@ use serde::{Serialize, Serializer, Deserializer, Deserialize};
 /// This macro implements the [`Command`] trait for a given type.
 /// the `#[command(title = "...")]` attribute can be used to define the title of the command
 /// on enum variants or structs.
+/// 
+/// # Example
+/// ```
+/// use sync_lsp::workspace::execute_command::Command;
+/// 
+/// #[derive(Clone, Command)]
+/// #[command(title = "My command without variants or arguments")]
+/// struct MyCommand;
+/// ```
+/// ```
+/// use sync_lsp::workspace::execute_command::Command;
+/// 
+/// #[derive(Clone, Command)]
+/// enum MyCommand {
+///     #[command(title = "My first command")]
+///     MyCommand,
+///     #[command(title = "My command with arguments")]
+///     MyCommandWithArguments(u32),
+/// }
+/// ```
 pub use sync_lsp_derive::Command;
 
 /// This struct can be unsed in an [`Endpoint`] to list all available commands on the server.
