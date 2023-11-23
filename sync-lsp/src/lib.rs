@@ -23,6 +23,7 @@ pub trait TypeProvider: 'static {
 
 //TODO
 //Implement dynamic registration support
+//Hide request cancellation behind a feature flag
 
 //Add Documentation
 //Add Readme
