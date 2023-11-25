@@ -20,7 +20,7 @@ pub struct WorkspaceEdit {
 }
 
 /// This struct provides a callback, but doesn't need to be used with an [`Endpoint`].
-pub(super) struct ApplyWorkspaceRequest<T: TypeProvider> {
+pub(super) struct ApplyEdit<T: TypeProvider> {
     callback: Callback<Server<T>>
 }
 
@@ -48,7 +48,7 @@ impl<T: TypeProvider> Connection<T> {
     
     pub fn apply_edit(&mut self, tag: T::ApplyEditData, edit: WorkspaceEdit) -> Option<CancellationToken> {
         self.request(
-            ApplyWorkspaceRequest::<T>::METHOD,
+            ApplyEdit::<T>::METHOD,
             tag,
             ApplyWorkspaceEditParams { edit }
         ).map(|id| id.into())
@@ -70,7 +70,7 @@ impl<T: TypeProvider> Server<T> {
     }
 }
 
-impl<T: TypeProvider> Default for ApplyWorkspaceRequest<T> {
+impl<T: TypeProvider> Default for ApplyEdit<T> {
     fn default() -> Self {
         Self {
             callback: Callback::response(|_, _: T::ApplyEditData, _: ApplyWorkspaceEditResponse| ())
@@ -78,7 +78,7 @@ impl<T: TypeProvider> Default for ApplyWorkspaceRequest<T> {
     }
 }
 
-impl<T: TypeProvider> ApplyWorkspaceRequest<T> {
+impl<T: TypeProvider> ApplyEdit<T> {
     pub(super) const METHOD: &'static str = "workspace/applyEdit";
 
     pub(crate) fn callback(&self) -> Callback<Server<T>> {

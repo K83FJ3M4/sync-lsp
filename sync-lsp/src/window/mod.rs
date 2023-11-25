@@ -1,3 +1,16 @@
+//! This module contains functionality centered arround logging and ui features.
+//! 
+//! When using this crate a logger for the `log` crate will be set up automatically.
+//! User of this library should never use `println!()` or `eprintln!()` as they will
+//! interfere with the stdio transport.
+//! ```
+//! use log::{debug, info, warn, error};
+//! error!("This is an error message");
+//! warn!("This is a warning message");
+//! info!("This is an info message");
+//! debug!("This is a debug message and will therefore not be shown on release builds");
+//! ```
+
 use serde_repr::Serialize_repr;
 
 use crate::{Server, TypeProvider};
@@ -13,6 +26,7 @@ mod log_message;
 mod telemetry;
 pub mod show_message_request;
 
+/// This struct contains all window endpoints, which are mainly used to resolve callbacks.
 pub(super) struct WindowService<T: TypeProvider> {
     #[allow(unused)]
     show_message: ShowMessage,
@@ -23,6 +37,9 @@ pub(super) struct WindowService<T: TypeProvider> {
     telemetry: Telemetry,
 }
 
+/// The priority of a message which is either logged or shown to the user.
+/// On debug builds, all messages are shown.
+/// On release builds, only messages with a priority of `Info` or higher are shown.
 #[repr(i32)]
 #[derive(Serialize_repr, Debug)]
 pub enum MessageType {

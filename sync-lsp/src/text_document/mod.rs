@@ -11,7 +11,7 @@ use self::document_symbol::DocumentSymbolOptions;
 use self::formatting::DocumentFormattingOptions;
 use self::hover::HoverOptions;
 use self::on_type_formatting::DocumentOnTypeFormattingOptions;
-use self::publish_diagnostics::PublishDiagnosticsOptions;
+use self::publish_diagnostics::PublishDiagnostics;
 use self::range_formatting::RangeFormattingOptions;
 use self::references::ReferenceOptions;
 use self::rename::RenameOptions;
@@ -96,7 +96,7 @@ pub(super) struct TextDocumentService<T: TypeProvider> {
     pub(super) did_save: Endpoint<T, DidSaveOptions>,
     did_close: Endpoint<T, DidCloseOptions>,
     #[allow(unused)]
-    publish_diagnostics: PublishDiagnosticsOptions,
+    publish_diagnostics: PublishDiagnostics,
     pub(super) completion: Endpoint<T, CompletionOptions>,
     resolve_completion: Endpoint<T, ResolveCompletionOptions>,
     hover: Endpoint<T, HoverOptions>,
