@@ -2,7 +2,8 @@
 //! 
 //! # Usage
 //! Many `Command` implementations will want to apply edits to the workspace and 
-//! may do so by using this request via [`Connection::apply_edit`]. The server shouldn't assume that the edit will be applied.
+//! may do so by using this request via [`Connection::apply_edit`].
+//! The server shouldn't assume that the edit will be immediately applied.
 //! Instead, the [`Server::on_apply_edit_response`] callback should be used to check whether
 //! the edit was applied or not.
 
@@ -19,17 +20,17 @@ pub struct WorkspaceEdit {
     pub changes: HashMap<DocumentUri, Vec<TextEdit>>
 }
 
-/// This struct provides a callback, but doesn't need to be used with an [`Endpoint`].
 pub(super) struct ApplyEdit<T: TypeProvider> {
     callback: Callback<Server<T>>
 }
 
-/// The parameters passed to the [`Connection::apply_edit`] request.
 #[derive(Serialize)]
 struct ApplyWorkspaceEditParams {
     edit: WorkspaceEdit
 }
 
+/// This response is sent when the [`Connection::apply_edit`] request has been completed
+/// and the edit has been applied.
 #[derive(Deserialize, Debug, Default)]
 pub struct ApplyWorkspaceEditResponse {
     /// Indicates whether the edit was applied or not.
@@ -38,13 +39,12 @@ pub struct ApplyWorkspaceEditResponse {
 
 impl<T: TypeProvider> Connection<T> {
 
-    /// This request is used to apply a [`WorkspaceEdit`] to resources on the client side.
-    /// The result and tag of the request can be retrieved using the corresponding [`Server::on_apply_edit_response`] method.
+    /// Request the [application of a workspace edit](self)
     ///
     /// # Arguments
-    /// * `tag` - A tag that will be passed to the [`Server::on_apply_edit_response`] callback.
+    /// * `tag` - A tag of type [`TypeProvider::ApplyEditData`] preserved throughout the request.
     /// * `edit` - The workspace edit to apply.
-    /// * `result` - A cancellation token that can be used to cancel the request.
+    /// * `result` - An optional cancellation token for the reqeust.
     
     pub fn apply_edit(&mut self, tag: T::ApplyEditData, edit: WorkspaceEdit) -> Option<CancellationToken> {
         self.request(
@@ -56,17 +56,17 @@ impl<T: TypeProvider> Connection<T> {
 }
 
 impl<T: TypeProvider> Server<T> {
-
-    /// Sets the callback that will be called when the client responds to an [`Connection::apply_edit`] request.
+    
+    /// Set the response handler for [applying a workspace edit](self)
     ///
-    /// # Arguments
-    /// * `f` - A function that will be called when the client responds to an [`Connection::apply_edit`] request.
-    /// The first argument is the server instance that received the response.
-    /// The second argument is the tag that was passed to the [`Connection::apply_edit`] request.
-    /// The third argument is the response from the client.
+    /// # Argument
+    /// * `callback` - A callback which is called with the following parameters as soon as a response from [`Connection::apply_edit`] is received:
+    ///     * The server instance receiving the response.
+    ///     * A tag of type [`TypeProvider::ApplyEditData`] that was passed to the request.
+    ///     * The response data of the client.
 
-    pub fn on_apply_edit_response(&mut self, f: fn(&mut Server<T>, T::ApplyEditData, ApplyWorkspaceEditResponse)) {
-        self.workspace.apply_edit.callback = Callback::response(f);
+    pub fn on_apply_edit_response(&mut self, callback: fn(&mut Server<T>, T::ApplyEditData, ApplyWorkspaceEditResponse)) {
+        self.workspace.apply_edit.callback = Callback::response(callback);
     }
 }
 
