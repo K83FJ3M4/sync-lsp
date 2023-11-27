@@ -1,15 +1,6 @@
 //! This module contains functionality centered arround logging and ui features.
 //! 
-//! When using this crate a logger for the `log` crate will be set up automatically.
-//! User of this library should never use `println!()` or `eprintln!()` as they will
-//! interfere with the stdio transport.
-//! ```
-//! use log::{debug, info, warn, error};
-//! error!("This is an error message");
-//! warn!("This is a warning message");
-//! info!("This is an info message");
-//! debug!("This is a debug message and will therefore not be shown on release builds");
-//! ```
+//! This module contains logging utilities and various notifications and requests related to the user interface.
 
 use serde_repr::Serialize_repr;
 
@@ -21,9 +12,9 @@ use self::show_message::ShowMessage;
 use self::show_message_request::ShowMessageRequest;
 use self::telemetry::Telemetry;
 
-mod show_message;
-mod log_message;
-mod telemetry;
+pub mod show_message;
+pub mod log_message;
+pub mod telemetry;
 pub mod show_message_request;
 
 /// This struct contains all window endpoints, which are mainly used to resolve callbacks.

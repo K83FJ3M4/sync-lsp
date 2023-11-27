@@ -42,7 +42,7 @@ struct DidChangeWatchedFilesParams {
 
 impl<T: TypeProvider> Server<T> {
     
-    /// Sets the callback that will be called when the client sends a change watched files notification.
+    /// Sets the callback that will be called when [watched files are changed](self).
     /// 
     /// # Argument
     /// * `callback` - A callback which is called with the following parameters as soon as watch file changes are received:

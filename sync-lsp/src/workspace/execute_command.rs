@@ -131,7 +131,7 @@ impl ExecuteCommandOptions {
 
 impl<T: TypeProvider> Server<T> {
 
-    /// Sets the callback that will be called to execute a certain `Command` defined in [`TypeProvider`].
+    /// Sets the callback that will be called to [execute a command](self).
     /// 
     /// # Argument
     /// * `callback` - A callback which is called with the following parameters as soon as the corresponding request is received:

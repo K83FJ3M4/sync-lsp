@@ -1,4 +1,9 @@
 //! implements the `window/showMessageRequest` request.
+//!
+//! # Usage
+//! This request may be used to query the user for a choice.
+//! The result can be retrieved using [`Server::on_show_message_response`] and therefore
+//! [`Connection::show_message_request`] won't block the current thread.
 
 use std::collections::HashMap;
 use std::mem::replace;
@@ -8,7 +13,6 @@ use crate::connection::{RpcConnection, Callback, CancellationToken};
 
 use super::MessageType;
 
-/// This struct provides a callback, but doesn't need to be used with an [`Endpoint`].
 pub(super) struct ShowMessageRequest<T: TypeProvider> {
     callback: Callback<Server<T>>
 }
@@ -26,7 +30,6 @@ pub struct MessageActionItem<T: Default> {
     pub data: T
 }
 
-/// The parameters passed to the [`Connection::show_message_request`] request.
 #[derive(Serialize)]
 #[serde(bound = "")]
 struct ShowMessageRequestParams<T: Default> {
@@ -38,14 +41,15 @@ struct ShowMessageRequestParams<T: Default> {
 }
 
 impl<T: TypeProvider> Connection<T> {
-    /// This request will trigger a query to the user.
-    /// The result resulting choice can be retrieved using the corresponding [`Server::on_show_message_response`] method.
+
+    /// This request will [trigger a query](self) to the user.
     /// 
     /// # Arguments
     /// * `r#type` - The type of message to show.
     /// * `message` - The message to show.
     /// * `actions` - The actions to show.
     /// * `result` - A optional cancellation token that can be used to cancel the request.
+    
     pub fn show_message_request(&mut self, r#type: MessageType, message: String, mut actions: Vec<MessageActionItem<T::ShowMessageRequestData>>) -> Option<CancellationToken> {
         self.request(
             ShowMessageRequest::<T>::METHOD,
@@ -67,17 +71,19 @@ impl<T: TypeProvider> Connection<T> {
 }
 
 impl<T: TypeProvider> Server<T> {
-    /// Retrieves the result from calls to [`Connection::show_message_request`].
-    /// 
-    /// # Arguments
-    /// * `f` - A function to handle a [`MessageActionItem`].
-    /// The first argument is the server instance that received the response.
-    /// The second argument is the [`MessageActionItem`] including the same data as specified in the request.
-    pub fn on_show_message_response(&mut self, f: fn(&mut Server<T>, MessageActionItem<T::ShowMessageRequestData>)) {
+
+    /// Set the response handler for [showing a message request](self)
+    ///
+    /// # Argument
+    /// * `callback` - A callback which is called with the following parameters if the result of a query is received:
+    ///     * The server instance receiving the response.
+    ///     * A tag of type [`TypeProvider::ShowMessageRequestData`] that was passed to the request.
+    
+    pub fn on_show_message_response(&mut self, callback: fn(&mut Server<T>, MessageActionItem<T::ShowMessageRequestData>)) {
         self.window.show_message_request.callback = Callback::response(move |connection, mut tag: HashMap<String, T::ShowMessageRequestData>, params: Option<MessageActionItem<T::ShowMessageRequestData>>| {
             if let Some(mut action) = params {
                 action.data = tag.remove(action.title.as_str()).unwrap_or_default();
-                f(connection, action)
+                callback(connection, action)
             }
         })
     }

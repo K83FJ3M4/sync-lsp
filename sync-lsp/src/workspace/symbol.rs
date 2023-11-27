@@ -74,7 +74,7 @@ impl SymbolOptions {
 
 impl<T: TypeProvider> Server<T> {
 
-    /// Sets the callback that will be used to resolve all symbols in a workspace.
+    /// Sets the callback that will be used to [resolve symbols](self) in a workspace.
     /// 
     /// # Argument
     /// * `callback` - A callback which is called with the following parameters as soon as the corresponding request is received:
