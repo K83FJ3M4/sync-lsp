@@ -92,13 +92,11 @@ use serde::{Serialize, Serializer, Deserializer, Deserialize};
 /// ```
 pub use sync_lsp_derive::Command;
 
-/// This struct can be unsed in an [`Endpoint`] to list all available commands on the server.
 #[derive(Serialize, Default, Clone)]
 pub(crate) struct ExecuteCommandOptions {
     commands: Vec<String>
 }
 
-/// A wrapper struct to make it easier to deserialize and serialize commands.
 pub(crate) struct CommandContainer<C: Command>(pub C);
 
 /// A unit command is a command that does not take any arguments.
@@ -132,13 +130,14 @@ impl ExecuteCommandOptions {
 }
 
 impl<T: TypeProvider> Server<T> {
+
     /// Sets the callback that will be called to execute a certain `Command` defined in [`TypeProvider`].
-    /// It's common for language servers to make a ['WorkspaceEdit'] in this callback.
     /// 
-    /// # Arguments
-    /// * `callback` - A function that is supposed to execute the command.
-    /// The first argument is the server instance that received the command.
-    /// The second argument is the command to be executed.
+    /// # Argument
+    /// * `callback` - A callback which is called with the following parameters as soon as the corresponding request is received:
+    ///     * The server instance receiving the response.
+    ///     * The `Command` to be executed.
+    
     pub fn on_execute_command<R: 'static + Serialize>(&mut self, callback: fn(&mut Server<T>, T::Command) -> R) {
         self.workspace.execute_command.set_callback(Callback::request(move |server, params: CommandContainer<T::Command>| {
             callback(server, params.0)
@@ -146,12 +145,10 @@ impl<T: TypeProvider> Server<T> {
     }
 }
 
-/// A helper function that can be used to deserialize an optional command via `#[serde(deserialize_with)]`.
 pub(crate) fn deserialize_opt_command<'de, D: Deserializer<'de>, C: Command>(deserializer: D) -> Result<Option<C>, D::Error> {
     Ok(Some(Command::deserialize(deserializer)?))
 }
 
-/// A helper function that can be used to serialize an optional command via `#[serde(serialize_with)]`.
 pub(crate) fn serialize_opt_command<S: Serializer, C: Command>(command: &Option<C>, serializer: S) -> Result<S::Ok, S::Error> {
     if let Some(command) = command {
         command.serialize(serializer)

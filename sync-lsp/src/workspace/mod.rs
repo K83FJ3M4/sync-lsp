@@ -6,7 +6,7 @@
 use crate::{connection::{Callback, Endpoint}, Server, TypeProvider};
 use self::{did_change_configuration::DidChangeConfigurationOptions, did_change_watched_files::DidChangeWatchedFilesOptions, symbol::SymbolOptions, execute_command::ExecuteCommandOptions, apply_edit::ApplyEdit};
 
-mod did_change_configuration;
+pub mod did_change_configuration;
 pub mod did_change_watched_files;
 pub mod symbol;
 pub mod execute_command;

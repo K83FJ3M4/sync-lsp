@@ -13,11 +13,9 @@ use crate::connection::{Callback, Endpoint};
 use serde::Deserialize;
 use serde_json::Value;
 
-/// Options for an [`Endpoint`] struct.
 #[derive(Default, Clone)]
 pub(crate) struct DidChangeConfigurationOptions;
 
-/// The parameters of a [`DidChangeConfigurationOptions::METHOD`] notification.
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct DidChangeConfigurationParams<T> {
@@ -35,11 +33,12 @@ impl DidChangeConfigurationOptions {
 
 impl<T: TypeProvider> Server<T> {
 
-    /// Sets the callback that will be called when the client sends a change configuration notification.
-    /// 
-    /// # Arguments
-    /// * `callback` - A function for handling changes of the configuration.
-    /// The first argument is the server, the second one is the settings value as defined in [`TypeProvider`].
+    /// Set the request handler for [changing the server configuration](self)
+    ///
+    /// # Argument
+    /// * `callback` - A callback which is called with the following parameters if a change in configuration is received:
+    ///     * The server instance receiving the response.
+    ///     * The updated configuration of type [`TypeProvider::Configuration`].
 
     pub fn on_change_configuration(&mut self, callback: fn(&mut Server<T>, T::Configuration)) {
         self.workspace.did_change_configuration.set_callback(Callback::notification(move |server, params: DidChangeConfigurationParams<T::Configuration>| {

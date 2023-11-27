@@ -13,15 +13,12 @@ use crate::connection::Callback;
 use serde::{Deserialize, Serialize};
 use serde_repr::Serialize_repr;
 
-/// This struct can be unsed in an [`Endpoint`].
 #[derive(Default, Clone)]
 pub(crate) struct SymbolOptions;
 
-/// The parameters of a [`SymbolOptions::METHOD`] request.
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct WorkspaceSymbolParams  {
-    /// A possibly empty query string to filter symbols.
     query: String
 }
 
@@ -70,19 +67,20 @@ impl SymbolOptions {
 
     pub(crate) const METHOD: &'static str = "workspace/symbol";
 
-    /// Creates a new [`Endpoint`] with the default options for this request.
     pub(super) fn endpoint<T: TypeProvider>() -> Endpoint<T, SymbolOptions> {
         Endpoint::new(Callback::request(|_, _: WorkspaceSymbolParams| Vec::<SymbolInformation>::new()))
     }
 }
 
 impl<T: TypeProvider> Server<T> {
+
     /// Sets the callback that will be used to resolve all symbols in a workspace.
     /// 
-    /// # Arguments
-    /// * `callback` - A function that takes in a query string and returns a vector of [`SymbolInformation`] elements.
-    /// This first argument is the server instance that received the request.
-    /// The second argument is a possibly empty query string to filter symbols.
+    /// # Argument
+    /// * `callback` - A callback which is called with the following parameters as soon as the corresponding request is received:
+    ///     * The server instance receiving the response.
+    ///     * A possibly empty query string that is used to filter the symbols.
+    
     pub fn on_symbol(&mut self, callback: fn(&mut Server<T>, String) -> Vec<SymbolInformation>) {
         self.workspace.symbol.set_callback(Callback::request(move |server, params: WorkspaceSymbolParams| {
             callback(server, params.query)

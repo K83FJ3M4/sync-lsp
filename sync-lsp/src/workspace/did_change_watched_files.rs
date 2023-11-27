@@ -10,7 +10,6 @@ use serde::Deserialize;
 use crate::{Server, TypeProvider};
 use crate::connection::{Endpoint, Callback};
 
-/// Options for an [`Endpoint`] struct.
 #[derive(Default, Clone)]
 pub(super) struct DidChangeWatchedFilesOptions;
 
@@ -36,7 +35,6 @@ pub enum FileChangeType {
     Deleted = 3
 }
 
-/// The parameters of a [`DidChangeWatchedFilesOptions::METHOD`] notification.
 #[derive(Deserialize)]
 struct DidChangeWatchedFilesParams {
     changes: Vec<FileEvent>
@@ -46,9 +44,10 @@ impl<T: TypeProvider> Server<T> {
     
     /// Sets the callback that will be called when the client sends a change watched files notification.
     /// 
-    /// # Arguments
-    /// * `callback` - A function for handling the change of watched files.
-    /// The first argument is the server, the second one is a vector of [`FileEvent`] elements.
+    /// # Argument
+    /// * `callback` - A callback which is called with the following parameters as soon as watch file changes are received:
+    ///     * The server instance receiving the response.
+    ///     * A vector of [`FileEvent`]s.
 
     pub fn on_change_watched_files(&mut self, callback: fn (&mut Server<T>, Vec<FileEvent>)) {
         self.workspace.did_change_watched_files.set_callback(Callback::notification(move |server, params: DidChangeWatchedFilesParams| {
