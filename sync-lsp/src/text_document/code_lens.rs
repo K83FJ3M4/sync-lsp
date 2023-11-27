@@ -23,6 +23,7 @@ struct CodeLensParams  {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CodeLens<C: Command, V> {
     pub range: Range,
+    #[serde(default = "Option::default")]
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(serialize_with = "serialize_opt_command")]
     #[serde(deserialize_with = "deserialize_opt_command")]

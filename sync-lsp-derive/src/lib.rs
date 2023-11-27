@@ -7,7 +7,8 @@ use syn::{
     parse_macro_input, DeriveInput, Data, Fields, Ident, Meta, Expr, Lit, ExprLit,
     ExprAssign, ExprPath, Generics, Variant, Result, Error, PathSegment,
     FieldsUnnamed, Visibility, Pat, PatStruct, Path, PatTupleStruct, PatIdent,
-    FieldPat, Member, Field, Type, TypeArray, LitInt, FieldMutability, PatSlice, ItemImpl, ImplItemType, TypeNever, TypePath, ImplItem,
+    FieldPat, Member, Field, Type, TypeArray, LitInt, FieldMutability, PatSlice,
+    ItemImpl, ImplItemType, TypeNever, TypePath, ImplItem
 };
 
 #[proc_macro_attribute]
@@ -22,13 +23,9 @@ pub fn type_provider(args: TokenStream, input: TokenStream) -> TokenStream {
     let mut input = parse_macro_input!(input as ItemImpl);
     let mut types = Vec::new();
 
-    let mut unit = Path {
-        leading_colon: Some(Default::default()),
-        segments: Punctuated::new()
-    };
-
-    unit.segments.push(PathSegment::from(Ident::new("sync_lsp", Span::call_site().into())));
-    unit.segments.push(PathSegment::from(Ident::new("UnitType", Span::call_site().into())));
+    let unit = Type::Verbatim(quote! {
+        std::option::Option::<()>
+    });
 
     let default = ImplItemType {
         attrs: Vec::new(),
@@ -66,55 +63,37 @@ pub fn type_provider(args: TokenStream, input: TokenStream) -> TokenStream {
 
     types.push(ImplItem::Type(ImplItemType {
         ident: Ident::new("CodeLensData", Span::call_site().into()),
-        ty: Type::Path(TypePath {
-            qself: None,
-            path: unit.clone()
-        }),
+        ty: unit.clone(),
         ..default.clone()
     }));
 
     types.push(ImplItem::Type(ImplItemType {
         ident: Ident::new("CompletionData", Span::call_site().into()),
-        ty: Type::Path(TypePath {
-            qself: None,
-            path: unit.clone()
-        }),
+        ty: unit.clone(),
         ..default.clone()
     }));
 
     types.push(ImplItem::Type(ImplItemType {
         ident: Ident::new("Configuration", Span::call_site().into()),
-        ty: Type::Path(TypePath {
-            qself: None,
-            path: unit.clone()
-        }),
+        ty: unit.clone(),
         ..default.clone()
     }));
 
     types.push(ImplItem::Type(ImplItemType {
         ident: Ident::new("InitializeOptions", Span::call_site().into()),
-        ty: Type::Path(TypePath {
-            qself: None,
-            path: unit.clone()
-        }),
+        ty: unit.clone(),
         ..default.clone()
     }));
 
     types.push(ImplItem::Type(ImplItemType {
         ident: Ident::new("ShowMessageRequestData", Span::call_site().into()),
-        ty: Type::Path(TypePath {
-            qself: None,
-            path: unit.clone()
-        }),
+        ty: unit.clone(),
         ..default.clone()
     }));
 
     types.push(ImplItem::Type(ImplItemType {
         ident: Ident::new("ApplyEditData", Span::call_site().into()),
-        ty: Type::Path(TypePath {
-            qself: None,
-            path: unit.clone()
-        }),
+        ty: unit.clone(),
         ..default.clone()
     }));
 

@@ -1,6 +1,6 @@
 use sync_lsp::text_document::{Range, Position};
 use sync_lsp::text_document::code_lens::CodeLens;
-use sync_lsp::{Transport, TypeProvider, Server, UnitType};
+use sync_lsp::{Transport, TypeProvider, Server};
 use sync_lsp::workspace::execute_command::Command;
 use log::info;
 
@@ -28,25 +28,26 @@ fn main() {
     let transport = Transport::stdio();
     let mut server = Server::new(MyServerState, transport);
 
-    // One example for a way to send commands to the client is the code lens request.
     server.on_code_lens(|_, _| {
         vec![
             CodeLens {
-                // For this example, we just return a code lens at the beginning of the document.
                 range: Range {
                     start: Position { line: 0, character: 0 },
                     end: Position { line: 0, character: 0 }
                 },
-                // This command will be executed when the user clicks on the code lens.
-                command: Some(MyCommand::MyCommandWithArguments(1)),
-                // Since we didn't override TypeProvider::CodeLensData, we have to use UnitType here.
-                data: UnitType
+                command: None,
+                data: None
             }
         ]
     });
 
+    server.on_code_lens_resolve(|_, mut code_lens| {
+        info!("Resolving code lens: {:?}", code_lens);
+        code_lens.command = Some(MyCommand::MyCommandWithArguments(1));
+        code_lens
+    });
+
     server.on_execute_command(|_, command| {
-        // Instead of executing the command here, we just log it.
         info!("Received command: {:?}", command);
     });
 
