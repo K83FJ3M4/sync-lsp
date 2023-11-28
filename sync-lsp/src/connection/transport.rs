@@ -25,6 +25,11 @@ use log::{
     error
 };
 
+/// The transport defines how data is sent and received from the client.
+/// The langauge server protocol commonly uses stdio and ipc, but
+/// tcp and custom transports are also supported.
+/// All errors that occur during sending and receiving will cause the
+/// [Server::serve](crate::Server::serve) method to immediately return with an error variant.
 pub struct Transport {
     raw: RawTransport,
     error: Option<Error>,
@@ -67,6 +72,13 @@ impl RawTransport {
 }
 
 impl Transport {
+
+    /// Creates a new transport from the given input and output streams.
+    /// This transport will not support polling and therefore will not be able to
+    /// support request cancellation.
+    /// 
+    /// # Arguments
+    /// * `input` - The input stream to read from.
     pub fn custom(input: impl BufRead + 'static, output: impl Write + 'static) -> Transport {
         Transport {
             raw: RawTransport::Custom {
@@ -80,6 +92,10 @@ impl Transport {
         }
     }
 
+    /// Opens a tcp connection to the given address and returns a transport.
+    /// 
+    /// # Argument
+    /// * `addr` - The address to connect to.
     pub fn tcp<T: ToSocketAddrs>(addr: T) -> Result<Transport, Error> {
         let mut poll = Poll::new().ok();
         let listener = TcpListener::bind(addr)?;
@@ -110,6 +126,7 @@ impl Transport {
         })
     }
 
+    /// Locks the standard input and output streams and returns a transport.
     pub fn stdio() -> Transport {
         let poll = Poll::new().ok();
         let input = stdin().lock();
