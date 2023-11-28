@@ -35,6 +35,7 @@ pub(crate) struct Error {
 	//pub data: T
 }
 
+/// Error codes used to either return a response or log to the client.
 #[repr(i32)]
 #[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq)]
 pub enum ErrorCode {

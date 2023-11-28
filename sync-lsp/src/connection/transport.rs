@@ -26,6 +26,7 @@ use log::{
 };
 
 /// The transport defines how data is sent and received from the client.
+/// 
 /// The langauge server protocol commonly uses stdio and ipc, but
 /// tcp and custom transports are also supported.
 /// All errors that occur during sending and receiving will cause the
