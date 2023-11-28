@@ -1,4 +1,4 @@
-pub use connection::{Transport, Connection, Server, CancellationToken};
+pub use connection::{Transport, Connection, Server};
 pub use sync_lsp_derive::type_provider;
 use serde::de::DeserializeOwned;
 use serde::Serialize;

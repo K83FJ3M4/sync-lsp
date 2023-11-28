@@ -10,7 +10,7 @@
 use std::collections::HashMap;
 use crate::text_document::{DocumentUri, TextEdit};
 use serde::{Serialize, Deserialize};
-use crate::connection::{RpcConnection, Callback, CancellationToken};
+use crate::connection::{RpcConnection, Callback};
 use crate::{Server, Connection, TypeProvider};
 
 /// A workspace edit represents changes to many resources managed in the workspace.
@@ -44,14 +44,14 @@ impl<T: TypeProvider> Connection<T> {
     /// # Arguments
     /// * `tag` - A tag of type [`TypeProvider::ApplyEditData`] preserved throughout the request.
     /// * `edit` - The workspace edit to apply.
-    /// * `result` - An optional cancellation token for the reqeust.
+    /// * `result` - A boolean indicating whether the request was sent.
     
-    pub fn apply_edit(&mut self, tag: T::ApplyEditData, edit: WorkspaceEdit) -> Option<CancellationToken> {
+    pub fn apply_edit(&mut self, tag: T::ApplyEditData, edit: WorkspaceEdit) -> bool {
         self.request(
             ApplyEdit::<T>::METHOD,
             tag,
             ApplyWorkspaceEditParams { edit }
-        ).map(|id| id.into())
+        )
     }
 }
 

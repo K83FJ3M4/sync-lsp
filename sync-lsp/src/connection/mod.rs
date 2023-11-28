@@ -40,9 +40,6 @@ pub struct Connection<T: TypeProvider> {
     marker: PhantomData<T>
 }
 
-#[derive(Clone)]
-pub struct CancellationToken(MessageID);
-
 impl<T: TypeProvider> Server<T> {
     pub fn new(state: T, transport: Transport) -> Server<T> {
         Server {
@@ -97,12 +94,6 @@ impl<T: TypeProvider> Connection<T> {
         R::default()
     }
 
-    pub fn cancel(&mut self, token: CancellationToken) {
-        self.notify("$/cancelRequest", CancelParams {
-            id: token.0
-        })
-    }
-
     pub fn cancelled(&mut self) -> bool {
         let Some(id) = self.current_request.clone() else { return false; };
         while let Some(params) = self.peek_notification::<CancelParams>("$/cancelRequest") {
@@ -129,11 +120,5 @@ impl<T: TypeProvider> Deref for Server<T> {
 impl<T: TypeProvider> DerefMut for Server<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.state
-    }
-}
-
-impl From<MessageID> for CancellationToken {
-    fn from(id: MessageID) -> Self {
-        CancellationToken(id)
     }
 }

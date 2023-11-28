@@ -25,7 +25,7 @@ pub(crate) trait RpcConnection: Sized + 'static {
 
     fn notify(&mut self, method: &str, params: impl Serialize)
         { RpcConnectionImpl::notify(self, method, params) }
-    fn request(&mut self, method: &str, tag: impl Serialize, params: impl Serialize) -> Option<MessageID>
+    fn request(&mut self, method: &str, tag: impl Serialize, params: impl Serialize) -> bool
         { RpcConnectionImpl::request(self, method, tag, params) }
     fn peek_notification<T: DeserializeOwned>(&mut self, method: &str) -> Option<T>
         { RpcConnectionImpl::peek_notification(self, method) }
@@ -162,7 +162,7 @@ pub(super) mod RpcConnectionImpl {
         });
     }
 
-    pub(super) fn request(connection: &mut impl RpcConnection, method: &str, tag: impl Serialize, params: impl Serialize) -> Option<MessageID> {
+    pub(super) fn request(connection: &mut impl RpcConnection, method: &str, tag: impl Serialize, params: impl Serialize) -> bool {
         
         let message = 'message: {
             
@@ -184,12 +184,12 @@ pub(super) mod RpcConnectionImpl {
             }) {
                 break 'message "A io error occured during the request".to_string()
             } else {
-                return Some(id.clone())
+                return true
             }
         };
 
         error!("Failed to send request: {message}");
-        None
+        false
     }
 
     fn recv(connection: &mut impl RpcConnection) -> Option<Message> {

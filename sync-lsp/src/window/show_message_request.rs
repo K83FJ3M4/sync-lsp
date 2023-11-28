@@ -9,7 +9,7 @@ use std::collections::HashMap;
 use std::mem::replace;
 use serde::{Serialize, Deserialize};
 use crate::{Connection, Server, TypeProvider};
-use crate::connection::{RpcConnection, Callback, CancellationToken};
+use crate::connection::{RpcConnection, Callback};
 
 use super::MessageType;
 
@@ -48,9 +48,9 @@ impl<T: TypeProvider> Connection<T> {
     /// * `r#type` - The type of message to show.
     /// * `message` - The message to show.
     /// * `actions` - The actions to show.
-    /// * `result` - A optional cancellation token that can be used to cancel the request.
+    /// * `result` - A boolean indicating whether the request was sent.
     
-    pub fn show_message_request(&mut self, r#type: MessageType, message: String, mut actions: Vec<MessageActionItem<T::ShowMessageRequestData>>) -> Option<CancellationToken> {
+    pub fn show_message_request(&mut self, r#type: MessageType, message: String, mut actions: Vec<MessageActionItem<T::ShowMessageRequestData>>) -> bool {
         self.request(
             ShowMessageRequest::<T>::METHOD,
             {
@@ -66,7 +66,7 @@ impl<T: TypeProvider> Connection<T> {
                 message,
                 actions
             }
-        ).map(|id| id.into())
+        )
     }
 }
 
