@@ -21,7 +21,8 @@ These are the main features of this library:
 use sync_lsp::{
     Transport,
     TypeProvider,
-    Server
+    Server,
+    text_document::did_open::TextDocumentItem
 };
 
 use sync_lsp::window::{
@@ -49,7 +50,14 @@ fn main() {
     let mut server = Server::new(MyServerState, transport);
 
     // Listeners for events can be set via server.on_* methods
-    server.on_open(|server, document| {
+    server.on_open(MyServerState::on_open);
+    server.on_show_message_response(MyServerState::on_show_message_response);
+    // Block the current thread and listen for messages
+    server.serve().unwrap();
+}
+
+impl MyServerState {
+    fn on_open(server: &mut Server<Self>, document: TextDocumentItem) {
         server.connection.show_message_request(
             MessageType::Warning,
             format!("Example query: {}", document.uri),
@@ -60,21 +68,18 @@ fn main() {
                 },
                 MessageActionItem {
                     title: "Action 2".to_string(),
-                    data: document.uri
+                    data: document.uri.clone()
                 }
             ]
         );
-    });
+    }
 
-    server.on_show_message_response(|server, item| {
+    fn on_show_message_response(server: &mut Server<Self>, item: MessageActionItem<String>) {
         server.connection.show_message(
             MessageType::Info,
             format!("Performing {} on {}", item.title, item.data)
         );
-    });
-
-    // Block the current thread and listen for messages
-    server.serve().unwrap();
+    }
 }
 ```
 
