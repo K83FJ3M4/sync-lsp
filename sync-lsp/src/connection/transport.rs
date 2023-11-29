@@ -6,10 +6,17 @@ use std::{io::{
     Error,
     stdin,
     stdout, BufReader
-}, time::Duration, net::{ToSocketAddrs, TcpListener}};
+}, net::{ToSocketAddrs, TcpListener}};
 
+#[cfg(feature = "mio")]
+use std::time::Duration;
+
+#[cfg(feature = "mio")]
 use mio::net::TcpStream;
+#[cfg(not(feature = "mio"))]
+use std::net::TcpStream;
 
+#[cfg(feature = "mio")]
 use mio::{
     Events,
     Poll,
@@ -18,6 +25,7 @@ use mio::{
 };
 
 #[cfg(unix)]
+#[cfg(feature = "mio")]
 use mio::unix::SourceFd;
 
 use log::{
@@ -34,7 +42,9 @@ use log::{
 pub struct Transport {
     raw: RawTransport,
     error: Option<Error>,
+    #[cfg(feature = "mio")]
     poll: Option<Poll>,
+    #[cfg(feature = "mio")]
     events: Events,
     buffer: Vec<Vec<u8>>
 }
@@ -87,8 +97,10 @@ impl Transport {
                 output: Box::new(output)
             },
             error: None,
+            #[cfg(feature = "mio")]
             events: Events::with_capacity(1),
             buffer: Vec::new(),
+            #[cfg(feature = "mio")]
             poll: None
         }
     }
@@ -97,11 +109,33 @@ impl Transport {
     /// 
     /// # Argument
     /// * `addr` - The address to connect to.
+    #[cfg(not(feature = "mio"))]
+    pub fn tcp<T: ToSocketAddrs>(addr: T) -> Result<Transport, Error> {
+        let listener = TcpListener::bind(addr)?;
+        let (output, ..) = listener.accept()?;
+        let input = output.try_clone()?;
+        let input = BufReader::new(input);
+
+        Ok(Transport {
+            raw: RawTransport::Tpc {
+                output,
+                input
+            },
+            error: None,
+            buffer: Vec::new(),
+        })
+    }
+
+    /// Opens a tcp connection to the given address and returns a transport.
+    /// 
+    /// # Argument
+    /// * `addr` - The address to connect to.
+    #[cfg(feature = "mio")]
     pub fn tcp<T: ToSocketAddrs>(addr: T) -> Result<Transport, Error> {
         let mut poll = Poll::new().ok();
         let listener = TcpListener::bind(addr)?;
-        let (stream, ..) = listener.accept()?;
-        let input = stream.try_clone()?;
+        let (output, ..) = listener.accept()?;
+        let input = output.try_clone()?;
         let mut input = TcpStream::from_std(input);
 
         if let Some(poll) = poll.as_mut() {
@@ -113,7 +147,7 @@ impl Transport {
         }
 
         let input = BufReader::new(input);
-        let output = TcpStream::from_std(stream);
+        let output = TcpStream::from_std(output);
 
         Ok(Transport {
             raw: RawTransport::Tpc {
@@ -128,6 +162,20 @@ impl Transport {
     }
 
     /// Locks the standard input and output streams and returns a transport.
+    #[cfg(not(feature = "mio"))]
+    pub fn stdio() -> Transport {
+        Transport {
+            raw: RawTransport::Stdio {
+                output: stdout().lock(),
+                input: stdin().lock()
+            },
+            error: None,
+            buffer: Vec::new(),
+        }
+    }
+
+    /// Locks the standard input and output streams and returns a transport.
+    #[cfg(feature = "mio")]
     pub fn stdio() -> Transport {
         let poll = Poll::new().ok();
         let input = stdin().lock();
@@ -194,12 +242,18 @@ impl Transport {
         }
     }
 
+    #[cfg(feature = "mio")]
     fn poll(&mut self) -> bool {
         self.events.clear();
         if let Some(poll) = self.poll.as_mut() {
             poll.poll(&mut self.events, Some(Duration::from_millis(1))).ok();
         }
         !self.events.is_empty()
+    }
+
+    #[cfg(not(feature = "mio"))]
+    fn poll(&mut self) -> bool {
+        false
     }
 
     fn try_recv(&mut self) -> Result<Vec<u8>, Error> {

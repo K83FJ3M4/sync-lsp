@@ -1,3 +1,5 @@
+#![doc = include_str!("../../README.md")]
+
 pub use connection::{Transport, Connection, Server, ErrorCode};
 /// This macro provides default implementations for all required types in [`TypeProvider`].
 /// 
@@ -45,7 +47,6 @@ pub trait TypeProvider: 'static {
 
 //TODO
 //Implement dynamic registration support
-//hide request cancellation beghin a feature flag
 
 //Add Documentation
 //Add Readme
