@@ -8,4 +8,4 @@ edition = "2021"
 [dependencies]
 log = "0.4.20"
 serde = { version = "1.0.192", features = ["derive"] }
-sync-lsp = { path = "../sync-lsp" }
+sync-lsp = { path = "../sync-lsp", default-features = false }

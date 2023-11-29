@@ -39,28 +39,34 @@ fn initialize(server: &mut Server<impl TypeProvider>, params: InitializeParams) 
     InitializeResult {
         capabilities: ServerCapabilities {
             text_document_sync: Some(TextDocumentSyncOptions {
-                open_close: true,
+                open_close: server.text_document.did_open.static_registration() | server.text_document.did_close.static_registration(),
                 change: server.text_document.sync_kind,
-                will_save: true,
-                will_save_wait_until: true,
+                will_save: server.text_document.will_save.static_registration(),
+                will_save_wait_until: server.text_document.will_save_wait_until.static_registration(),
                 save: server.text_document.did_save.options()
             }),
-            completion_provider: Some(server.text_document.completion.options()),
-            execute_command_provider: Some(server.workspace.execute_command.options()),
-            signature_help_provider: Some(server.text_document.signature_help.options()),
-            document_on_type_formatting_provider: Some(server.text_document.on_type_formatting.options()),
-            code_lens_provider: Some(server.text_document.code_lens.options()),
-            document_link_provider: Some(server.text_document.document_link.options()),
-            hover_provider: true,
-            definition_provider: true,
-            references_provider: true,
-            document_highlight_provider: true,
-            document_symbol_provider: true,
-            workspace_symbol_provider: true,
-            code_action_provider: true,
-            document_formatting_provider: true,
-            document_range_formatting_provider: true,
-            rename_provider: true
+            completion_provider: Some(server.text_document.completion.options())
+                .filter(|_| server.text_document.completion.static_registration()),
+            execute_command_provider: Some(server.workspace.execute_command.options())
+                .filter(|_| server.workspace.execute_command.static_registration()),
+            signature_help_provider: Some(server.text_document.signature_help.options())
+                .filter(|_| server.text_document.signature_help.static_registration()),
+            document_on_type_formatting_provider: Some(server.text_document.on_type_formatting.options())
+                .filter(|_| server.text_document.on_type_formatting.static_registration()),
+            code_lens_provider: Some(server.text_document.code_lens.options())
+                .filter(|_| server.text_document.code_lens.static_registration()),
+            document_link_provider: Some(server.text_document.document_link.options())
+                .filter(|_| server.text_document.document_link.static_registration()),
+            hover_provider: server.text_document.hover.static_registration(),
+            definition_provider: server.text_document.definition.static_registration(),
+            references_provider: server.text_document.references.static_registration(),
+            document_highlight_provider: server.text_document.document_highlight.static_registration(),
+            document_symbol_provider: server.text_document.document_symbol.static_registration(),
+            workspace_symbol_provider: server.workspace.symbol.static_registration(),
+            code_action_provider: server.text_document.code_action.static_registration(),
+            document_formatting_provider: server.text_document.formatting.static_registration(),
+            document_range_formatting_provider: server.text_document.range_formatting.static_registration(),
+            rename_provider: server.text_document.rename.static_registration(),
         }
     }
 }

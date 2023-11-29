@@ -6,7 +6,8 @@ use super::jsonrpc::{RpcConnection, Callback, RpcError, MessageID, RpcResolver};
 
 pub(crate) struct Endpoint<T: TypeProvider, O: Clone + Default> {
     callback: Callback<Server<T>>,
-    options: O
+    options: O,
+    static_registration: bool
 }
 
 impl<T: TypeProvider> RpcResolver for Server<T> {
@@ -54,8 +55,16 @@ impl<T: TypeProvider, O: Clone + Default> Endpoint<T, O> {
     pub(crate) fn new(callback: Callback<Server<T>>,) -> Self {
         Endpoint {
             callback,
-            options: O::default()
+            options: O::default(),
+            #[cfg(feature = "dynamic-callbacks")]
+            static_registration: true,
+            #[cfg(not(feature = "dynamic-callbacks"))]
+            static_registration: false
         }
+    }
+
+    pub(super) fn static_registration(&self) -> bool {
+        self.static_registration
     }
 
     pub(crate) fn options_mut(&mut self) -> &mut O {
@@ -63,6 +72,7 @@ impl<T: TypeProvider, O: Clone + Default> Endpoint<T, O> {
     }
 
     pub(crate) fn set_callback(&mut self, callback: Callback<Server<T>>) {
+        self.static_registration = true;
         self.callback = callback;
     }
 

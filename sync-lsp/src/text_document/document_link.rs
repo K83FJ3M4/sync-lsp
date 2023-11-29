@@ -12,7 +12,7 @@ pub(crate) struct DocumentLinkOptions {
 
 #[derive(Serialize, Clone, Default)]
 #[serde(rename_all = "camelCase")]
-pub(super) struct DocumentLinkResolveOptions;
+pub(crate) struct DocumentLinkResolveOptions;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]

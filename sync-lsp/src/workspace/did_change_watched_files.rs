@@ -11,7 +11,7 @@ use crate::{Server, TypeProvider};
 use crate::connection::{Endpoint, Callback};
 
 #[derive(Default, Clone)]
-pub(super) struct DidChangeWatchedFilesOptions;
+pub(crate) struct DidChangeWatchedFilesOptions;
 
 /// A file event that is sent by the client when a file is created, changed or deleted.
 #[derive(Deserialize, Debug)]

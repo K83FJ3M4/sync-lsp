@@ -14,10 +14,10 @@ pub mod apply_edit;
 
 /// This struct contains all workspace endpoints, which are mainly used to resolve callbacks.
 pub(crate) struct WorkspaceService<T: TypeProvider> {
-    did_change_configuration: Endpoint<T, DidChangeConfigurationOptions>,
-    did_change_watched_files: Endpoint<T, DidChangeWatchedFilesOptions>,
-    symbol: Endpoint<T, SymbolOptions>,
-    pub(crate) execute_command: Endpoint<T, ExecuteCommandOptions>,
+    pub(super) did_change_configuration: Endpoint<T, DidChangeConfigurationOptions>,
+    pub(super) did_change_watched_files: Endpoint<T, DidChangeWatchedFilesOptions>,
+    pub(super) symbol: Endpoint<T, SymbolOptions>,
+    pub(super) execute_command: Endpoint<T, ExecuteCommandOptions>,
     /// Apply edit is a server side request, which is why it isn't an endpoint.
     apply_edit: ApplyEdit<T>
 }

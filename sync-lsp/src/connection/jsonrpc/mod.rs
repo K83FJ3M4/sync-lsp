@@ -218,6 +218,7 @@ pub(super) mod RpcConnectionImpl {
     }
 
     fn handle(server: &mut impl RpcResolver, message: Message) {
+
         match message {
             Message::Request { id, params, method, .. } => handle_request(server, method, id, params),
             Message::Notification { params, method, .. } => handle_notification(server, method, params),

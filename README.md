@@ -6,7 +6,7 @@
 [mit-badge]: https://img.shields.io/badge/license-MIT-blue.svg
 [mit-url]: https://github.com/K83FJ3M4/sync-lsp/blob/main/LICENSE
 
-Sync Lsp is a synchronous lsp implementation for language servers.
+Sync Lsp is a synchronous [lsp](https://microsoft.github.io/language-server-protocol/) implementation for language servers.
 These are the main features of this library:
 
 - **Automation**: Sync Lsp handles registration and unregistration aswell as capabilitie negotiations by itself. Ontop of that none of the lifecycle messages are exposed to users of this library.
@@ -82,4 +82,5 @@ fn main() {
 
 | Flag | Description |
 |------|-------------|
-| `mio` | The [mio](https://github.com/tokio-rs/mio) crate will be used to poll for messages and therefore enable request cancellation support. Without this flag the `Connection::cancelled` method is still available, but will always return false |
+| `mio` | The [mio](https://github.com/tokio-rs/mio) crate will be used to poll for messages and therefore enable request cancellation support. Without this flag the `Connection::cancelled` method is still available, but will always return false. |
+| `dynamic-callbacks` | If this feature is disabled, there should be no calls to `Server::on_*` after `Server::server` is called, and the server's performance may improve. Note that this is mainly a performance feature and does not equate to the client's ability to register capabilities dynamically via the lsp. |

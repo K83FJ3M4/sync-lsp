@@ -14,4 +14,6 @@ serde_repr = "0.1.17"
 sync-lsp-derive = { path = "../sync-lsp-derive" }
 
 [features]
+default = ["mio", "dynamic-callbacks"]
 mio = ["dep:mio"]
+dynamic-callbacks = []
