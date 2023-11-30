@@ -3,7 +3,7 @@ use crate::connection::Endpoint;
 use crate::{connection::Callback, Server};
 use self::code_action::CodeActionOptions;
 use self::code_lens::{CodeLensOptions, CodeLensResolveOptions};
-use self::completion::{CompletionOptions, ResolveCompletionOptions};
+use self::completion::{CompletionOptions, ResolveCompletionOptions, CompletionCapabilities};
 use self::definition::DefinitionOptions;
 use self::document_highlight::DocumentHighlightOptions;
 use self::document_link::{DocumentLinkOptions, DocumentLinkResolveOptions};
@@ -16,7 +16,14 @@ use self::range_formatting::RangeFormattingOptions;
 use self::references::ReferenceOptions;
 use self::rename::RenameOptions;
 use self::signature_help::SignatureHelpOptions;
-use self::{did_open::DidOpenOptions, did_change::DidChangeOptions, will_save::WillSaveOptions, will_save_wait_until::WillSaveWaitUntilOptions, did_save::DidSaveOptions, did_close::DidCloseOptions};
+use self::{
+    did_open::DidOpenOptions,
+    did_change::DidChangeOptions,
+    will_save::WillSaveOptions,
+    will_save_wait_until::WillSaveWaitUntilOptions,
+    did_save::DidSaveOptions,
+    did_close::DidCloseOptions
+};
 use serde::{Serialize, Deserialize};
 use serde_repr::Serialize_repr;
 
@@ -85,6 +92,12 @@ pub struct Range {
 pub struct VersionedTextDocumentIdentifier {
     pub uri: DocumentUri,
     pub version: i32,
+}
+
+#[derive(Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
+pub(super) struct TextDocumentClientCapabilities {
+    completion: CompletionCapabilities
 }
 
 pub(super) struct TextDocumentService<T: TypeProvider> {

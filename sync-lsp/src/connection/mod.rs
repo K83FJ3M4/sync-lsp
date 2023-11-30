@@ -10,6 +10,7 @@ pub(crate) use rpc::Endpoint;
 
 use crate::TypeProvider;
 use crate::lifecycle::LifecycleService;
+use crate::lifecycle::initialize::ClientCapabilities;
 use crate::text_document::TextDocumentService;
 use crate::window::WindowService;
 use crate::workspace::WorkspaceService;
@@ -56,7 +57,8 @@ pub struct Server<T: TypeProvider> {
     lifecycle: LifecycleService<T>,
     pub(crate) window: WindowService<T>,
     pub(crate) text_document: TextDocumentService<T>,
-    pub(crate) workspace: WorkspaceService<T>
+    pub(crate) workspace: WorkspaceService<T>,
+    pub(crate) capabilities: ClientCapabilities,
 }
 
 /// The connection to the client can be obtained in one of two way:
@@ -104,7 +106,8 @@ impl<T: TypeProvider> Server<T> {
             lifecycle: Default::default(),
             window: Default::default(),
             text_document: Default::default(),
-            workspace: Default::default()
+            workspace: Default::default(),
+            capabilities: ClientCapabilities::default()
         }
     }
 

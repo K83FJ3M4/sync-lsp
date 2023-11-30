@@ -1,6 +1,4 @@
 //! This module contains functionality centered arround logging and ui features.
-//! 
-//! This module contains logging utilities and various notifications and requests related to the user interface.
 
 use serde_repr::Serialize_repr;
 

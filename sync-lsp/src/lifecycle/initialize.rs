@@ -2,7 +2,7 @@ use serde::{Serialize, Deserialize};
 use serde_json::Value;
 use crate::{Server, TypeProvider};
 use crate::connection::Callback;
-use crate::text_document::TextDocumentSyncOptions;
+use crate::text_document::{TextDocumentSyncOptions, TextDocumentClientCapabilities};
 use crate::text_document::code_lens::CodeLensOptions;
 use crate::text_document::completion::CompletionOptions;
 use crate::text_document::document_link::DocumentLinkOptions;
@@ -13,7 +13,7 @@ use crate::workspace::execute_command::ExecuteCommandOptions;
 pub(crate) struct Initialize<T: TypeProvider>
     (pub(crate) fn(&mut Server<T>, params: InitializeParams) -> InitializeResult);
 
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct InitializeParams {
     pub(crate) process_id: Option<u32>,
@@ -31,11 +31,11 @@ pub(crate) struct InitializeResult {
     pub(crate) capabilities: ServerCapabilities,
 }
 
-#[derive(Debug, Deserialize, Default)]
+#[derive(Deserialize, Default)]
 #[serde(rename_all = "camelCase", default)]
 pub(crate) struct ClientCapabilities {
     //pub(crate) workspace: Option<WorkspaceClientCapabilities>,
-    //pub(crate) text_document: TextDocumentClientCapabilities,
+    pub(crate) text_document: TextDocumentClientCapabilities,
     //pub(crate) experimental: Option<Value>,
 }
 

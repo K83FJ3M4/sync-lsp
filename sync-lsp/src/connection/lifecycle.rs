@@ -32,6 +32,7 @@ fn initialize(server: &mut Server<impl TypeProvider>, params: InitializeParams) 
         };
     };
     
+    server.capabilities = params.capabilities;
     server.process_id = params.process_id;
     server.root_uri = params.root_uri
         .or(params.root_path);
