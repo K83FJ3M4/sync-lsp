@@ -1,9 +1,10 @@
-//! implementation of the `textDocument/codeAction` request
+//! implementation of the `textDocument/codeLens` request
 //! 
 //! # Usage
 //! [`Server::on_code_action`] is called to compute commands, which are
 //! commonly displayed in the user interface as some kind of button
-//! in the source code.
+//! in the source code. Optionally a command can be attached later on
+//! via [`Server::on_resolve_code_action`].
 
 use crate::TypeProvider;
 use crate::{Server, connection::Endpoint};

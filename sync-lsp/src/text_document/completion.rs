@@ -1,3 +1,11 @@
+//! implementation of the `textDocument/completion` request
+//! 
+//! # Usage
+//! [`Server::on_completion`] is invoked when completion items are requested for
+//! a cursor position. As the computation of completion items can be expensive
+//! ['Server::on_resolve_completion`] may be used to resolve additional
+//! information for a completion item.
+
 use crate::workspace::execute_command::{serialize_opt_command, deserialize_opt_command};
 use crate::{Server, TypeProvider};
 use crate::connection::{Callback, Endpoint};
@@ -16,14 +24,19 @@ pub(crate) struct CompletionOptions {
 #[derive(Clone, Default)]
 pub(crate) struct ResolveCompletionOptions;
 
+/// A list of completion items.
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(bound = "")]
 pub struct CompletionList<T: TypeProvider> {
+    /// This may cause recomputations if set to `true`.
     pub is_incomplete: bool,
+    /// The completion items.
     pub items: Vec<CompletionItem<T>>,
 }
 
+/// Defines different kind of completion items.
+/// Mainly used in the ui to resolve icons.
 #[repr(i32)]
 #[derive(Serialize_repr, Deserialize_repr, Debug)]
 pub enum CompletionItemKind {
@@ -116,7 +129,7 @@ impl<T: TypeProvider> Server<T> {
         }));
     }
 
-    pub fn on_completion_resolve(&mut self, callback: fn(&mut Server<T>, CompletionItem<T>) -> CompletionItem<T>) {
+    pub fn on_resolve_completion(&mut self, callback: fn(&mut Server<T>, CompletionItem<T>) -> CompletionItem<T>) {
         self.text_document.resolve_completion.set_callback(Callback::request(move |server, item| {
             callback(server, item)
         }));

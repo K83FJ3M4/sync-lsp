@@ -47,7 +47,5 @@ pub trait TypeProvider: 'static {
 
 //TODO
 //Implement dynamic registration support
-
 //Add Documentation
-//Add Readme
 //Publish
