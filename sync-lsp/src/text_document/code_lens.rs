@@ -1,3 +1,10 @@
+//! implementation of the `textDocument/codeAction` request
+//! 
+//! # Usage
+//! [`Server::on_code_action`] is called to compute commands, which are
+//! commonly displayed in the user interface as some kind of button
+//! in the source code.
+
 use crate::TypeProvider;
 use crate::{Server, connection::Endpoint};
 use crate::connection::Callback;
@@ -20,14 +27,19 @@ struct CodeLensParams  {
     text_document: TextDocumentIdentifer,
 }
 
+/// A code lens represents a command.
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CodeLens<C: Command, V> {
+    /// The range in which this code lens is valid. Should only span a single line.
     pub range: Range,
+    /// A server command as defined in [`TypeProvider::Command`]
     #[serde(default = "Option::default")]
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(serialize_with = "serialize_opt_command")]
     #[serde(deserialize_with = "deserialize_opt_command")]
     pub command: Option<C>,
+    /// Arbitrary data as defined in [`TypeProvider::CodeLensData`]
+    /// used to identify this code lens when [`Server::on_resolve_code_lens`] is invoked.
     pub data: V,
 }
 
@@ -50,13 +62,30 @@ impl CodeLensResolveOptions {
 }
 
 impl<T: TypeProvider> Server<T> {
+
+    /// Sets the callback that will be called to [compute code lenses](self).
+    /// 
+    /// # Argument
+    /// * `callback` - A callback which is called with the following parameters as soon as code lenses are requested:
+    ///     * The server instance receiving the response.
+    ///     * The [`TextDocumentIdentifer`] of the document for which code actions are requested.
+    ///     * `return` - A list of code lenses to display.
+
     pub fn on_code_lens(&mut self, callback: fn(&mut Server<T>, TextDocumentIdentifer) -> Vec<CodeLens<T::Command, T::CodeLensData>>) {
         self.text_document.code_lens.set_callback(Callback::request(move |server, params: CodeLensParams| {
             callback(server, params.text_document)
         }));
     }
 
-    pub fn on_code_lens_resolve(&mut self, callback: fn(&mut Server<T>, CodeLens<T::Command, T::CodeLensData>) -> CodeLens<T::Command, T::CodeLensData>) {
+    /// Sets the callback that will be called to [compute commands of code lenses](self), which were previously returned by [`Server::on_code_lens`].
+    /// 
+    /// # Argument
+    /// * `callback` - A callback which is called with the following parameters as soon a code lens can be resolved:
+    ///     * The server instance receiving the response.
+    ///     * The [`CodeLens`] to resolve with `command` set to `None`.
+    ///    * `return` - The resolved code lens.
+
+    pub fn on_resolve_code_lens(&mut self, callback: fn(&mut Server<T>, CodeLens<T::Command, T::CodeLensData>) -> CodeLens<T::Command, T::CodeLensData>) {
         self.text_document.resolve_code_lens.set_callback(Callback::request(move |server, params| {
             callback(server, params)
         }));
