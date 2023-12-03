@@ -12,12 +12,12 @@ keywords = ["lsp", "language-server"]
 categories = ["development-tools", "editor-plugins", "language-tools"]
 
 [dependencies]
-log = { version = "0.4.20", features = ["std"] }
-mio = { version = "0.8.9", features = ["os-poll", "os-ext", "net"], optional = true }
-serde = { version = "1.0.190", features = ["derive"] }
-serde_json = "1.0.108"
-serde_repr = "0.1.17"
-sync-lsp-derive = { path = "../sync-lsp-derive" }
+log = { version = "0.4.*", features = ["std"] }
+mio = { version = "0.8.*", features = ["os-poll", "os-ext", "net"], optional = true }
+serde = { version = "1.0.*", features = ["derive"] }
+serde_json = "1.0.*"
+serde_repr = "0.1.*"
+sync-lsp-derive = { version = "*", path = "../sync-lsp-derive" }
 
 [features]
 default = ["mio", "dynamic-callbacks"]
