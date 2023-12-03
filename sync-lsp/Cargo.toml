@@ -17,7 +17,7 @@ mio = { version = "0.8.*", features = ["os-poll", "os-ext", "net"], optional = t
 serde = { version = "1.0.*", features = ["derive"] }
 serde_json = "1.0.*"
 serde_repr = "0.1.*"
-sync-lsp-derive = { version = "*", path = "../sync-lsp-derive" }
+sync-lsp-derive = { version = "0.1.0", path = "../sync-lsp-derive" }
 
 [features]
 default = ["mio", "dynamic-callbacks"]
