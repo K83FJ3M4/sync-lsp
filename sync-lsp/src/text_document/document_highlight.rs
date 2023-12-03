@@ -6,20 +6,27 @@ use serde::Serialize;
 use serde_repr::Serialize_repr;
 
 #[derive(Default, Clone)]
-pub struct DocumentHighlightOptions;
+pub(crate) struct DocumentHighlightOptions;
 
+/// A highlighted region of a document.
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct DocumentHighlight  {
+    /// The range to highlight.
     pub range: Range,
+    /// The kind of highlight, defaults to [`DocumentHighlightKind::Text`]
     pub kind: Option<DocumentHighlightKind>
 }
 
+/// This enum changes the way highlights are rendered.
 #[repr(i32)]
 #[derive(Serialize_repr, Debug)]
 pub enum DocumentHighlightKind {
+    /// A textual symbol.
     Text = 1,
+    /// A immutable symbol, like a constant variable.
     Read = 2,
+    /// A mutable symbol, like a variable.
     Write = 3
 }
 

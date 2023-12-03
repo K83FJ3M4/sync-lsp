@@ -61,10 +61,10 @@ pub struct Server<T: TypeProvider> {
     pub(crate) capabilities: ClientCapabilities,
 }
 
+/// This struct may be used to send notifications and requests to the client.
 /// The connection to the client can be obtained in one of two way:
 /// * By calling [`Server::split`] and taking the first element of the tuple
 /// * By referencing the `connection` field of the [`Server`] struct.
-/// The connection is used to send notifications and requests to the client.
 /// 
 /// # Example
 /// ```

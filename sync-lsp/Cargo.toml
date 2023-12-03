@@ -1,9 +1,15 @@
 [package]
 name = "sync-lsp"
 version = "0.1.0"
+authors = ["Phillip Mendel"]
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "A synchronous LSP library for servers"
+documentation = "https://docs.rs/sync-lsp"
+readme = "README.md"
+repository = "https://github.com/K83FJ3M4/sync-lsp"
+license = "MIT"
+keywords = ["lsp", "language-server"]
+categories = ["development-tools", "editor-plugins", "language-tools"]
 
 [dependencies]
 log = { version = "0.4.20", features = ["std"] }

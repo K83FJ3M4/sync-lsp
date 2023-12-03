@@ -1,3 +1,5 @@
+//! A module containing all text document related functionality.
+
 use crate::TypeProvider;
 use crate::connection::Endpoint;
 use crate::{connection::Callback, Server};

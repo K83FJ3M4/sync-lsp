@@ -1,20 +1,6 @@
-#![doc = include_str!("../../README.md")]
+#![doc = include_str!("../README.md")]
 
 pub use connection::{Transport, Connection, Server, ErrorCode};
-/// This macro provides default implementations for all required types in [`TypeProvider`].
-/// 
-/// # Example
-/// ```
-/// use sync_lsp::{TypeProvider, type_provider};
-/// 
-/// struct MyServerState;
-/// 
-/// #[type_provider]
-/// impl TypeProvider for MyServerState {
-///     type ShowMessageRequestData = u32;
-///     // All other types will be set to `Option<()>`
-/// }
-/// ```
 pub use sync_lsp_derive::type_provider;
 use serde::de::DeserializeOwned;
 use serde::Serialize;

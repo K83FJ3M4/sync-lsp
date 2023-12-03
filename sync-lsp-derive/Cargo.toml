@@ -2,6 +2,13 @@
 name = "sync-lsp-derive"
 version = "0.1.0"
 edition = "2021"
+description = "Macros for the sync-lsp crate"
+documentation = "https://docs.rs/sync-lsp-derive"
+readme = "README.md"
+repository = "https://github.com/K83FJ3M4/sync-lsp"
+license = "MIT"
+keywords = ["lsp", "language-server"]
+categories = ["development-tools", "editor-plugins", "language-tools"]
 
 [lib]
 proc-macro = true

@@ -1,3 +1,5 @@
+#![doc = include_str!("../README.md")]
+
 use proc_macro::{TokenStream, Span};
 use syn::punctuated::Punctuated;
 use syn::spanned::Spanned;
@@ -11,6 +13,20 @@ use syn::{
     ItemImpl, ImplItemType, TypeNever, TypePath, ImplItem
 };
 
+/// This macro provides default implementations for all required types in [`TypeProvider`].
+/// 
+/// # Example
+/// ```
+/// use sync_lsp::{TypeProvider, type_provider};
+/// 
+/// struct MyServerState;
+/// 
+/// #[type_provider]
+/// impl TypeProvider for MyServerState {
+///     type ShowMessageRequestData = u32;
+///     // All other types will be set to `Option<()>`
+/// }
+/// ```
 #[proc_macro_attribute]
 pub fn type_provider(args: TokenStream, input: TokenStream) -> TokenStream {
     if !args.is_empty() {
@@ -110,6 +126,29 @@ pub fn type_provider(args: TokenStream, input: TokenStream) -> TokenStream {
     input.into_token_stream().into()
 }
 
+/// This macro implements the [`Command`] trait for a given type.
+/// the `#[command(title = "...")]` attribute can be used to define the title of the command
+/// on enum variants or structs.
+/// 
+/// # Example
+/// ```
+/// use sync_lsp::workspace::execute_command::Command;
+/// 
+/// #[derive(Clone, Command)]
+/// #[command(title = "My command without variants or arguments")]
+/// struct MyCommand;
+/// ```
+/// ```
+/// use sync_lsp::workspace::execute_command::Command;
+/// 
+/// #[derive(Clone, Command)]
+/// enum MyCommand {
+///     #[command(title = "My first command")]
+///     MyCommand,
+///     #[command(title = "My command with arguments")]
+///     MyCommandWithArguments(u32),
+/// }
+/// ```
 #[proc_macro_derive(Command, attributes(command))]
 pub fn command(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
