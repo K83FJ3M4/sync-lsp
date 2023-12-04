@@ -1,10 +1,9 @@
 //! implementation of the `textDocument/didClose` notification
 //! 
 //! # Usage
-//! Whenever a document is closed, [`Server::on_change`] is invoked.
+//! Whenever a document is closed, [`Server::on_close`] is invoked.
 //! The client should only send this if it claimed ownership of the document
 //! via [`Server::on_open`] before.
-
 
 use crate::{Server, TypeProvider};
 use crate::connection::{Callback, Endpoint};
