@@ -1,3 +1,10 @@
+//! implementation of the `textDocument/onTypeFormatting` notification.
+//! 
+//! # Usage
+//! Whenever a character is typed, [`Server::on_type_formatting`] is invoked. This could for
+//! example be used to fix indentation after a bracket was typed. Additionally, [`Server::set_on_type_formatting_first_trigger_character`]
+//! and [`Server::set_on_type_formatting_more_trigger_characters`] can be used to set the characters that trigger formatting.
+
 use crate::TypeProvider;
 use crate::{Server, connection::Endpoint};
 use crate::connection::Callback;
@@ -38,9 +45,19 @@ impl<T: TypeProvider> Server<T> {
         }))
     }
     
+    /// Sets the first trigger character that triggers [on type formatting](self).
+    /// 
+    /// # Argument
+    /// * `value` - The first trigger character that triggers formatting.
+
     pub fn set_on_type_formatting_first_trigger_character(&mut self, value: String) {
         self.text_document.on_type_formatting.options_mut().first_trigger_character = value;
     }
+
+    /// Sets the additional characters that trigger [on type formatting](self).
+    ///     
+    /// # Argument
+    /// * `value` - Additional characters that trigger formatting.
 
     pub fn set_on_type_formatting_more_trigger_characters(&mut self, value: Vec<String>) {
         self.text_document.on_type_formatting.options_mut().more_trigger_character = value;
