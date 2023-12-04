@@ -49,7 +49,7 @@ impl<T: TypeProvider> Server<T> {
     /// # Argument
     /// * `callback` - A callback which is called with the following parameters as soon as a document is formatted:
     ///     * `server` - The server on which the request was received.
-    ///     * `document` - The [`TextDocumentIdentifer`] of the document that has been opened.
+    ///     * `document` - The [`TextDocumentIdentifer`] of the target document.
     ///     * `options` - The [`FormattingOptions`] that specify how the document should be formatted.
     ///     * `return` - A list of edits to apply to the document.
 

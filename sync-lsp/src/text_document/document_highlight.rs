@@ -53,7 +53,7 @@ impl<T: TypeProvider> Server<T> {
     /// # Argument
     /// * `callback` - A callback which is called with the following parameters as soon as a highlight is requested:
     ///     * The server instance receiving the response.
-    ///     * The [`TextDocumentIdentifer`] of the document that has been opened.
+    ///     * The [`TextDocumentIdentifer`] of the target document.
     ///     * The [`Position`] of the cursor.
     ///     * `return` - A list of highlights to display.
 

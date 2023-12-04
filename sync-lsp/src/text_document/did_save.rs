@@ -42,7 +42,7 @@ impl<T: TypeProvider> Server<T> {
     /// # Argument
     /// * `callback` - A callback which is called with the following parameters as soon as a file is saved:
     ///     * The server instance receiving the response.
-    ///     * The [`TextDocumentIdentifer`] of the document that has been opened.
+    ///     * The [`TextDocumentIdentifer`] of the saved document.
     ///     * The content of the file, if enabled via [`Server::set_save_include_text`].
 
     pub fn on_save(&mut self, callback: fn(&mut Server<T>, TextDocumentIdentifer, Option<String>)) {

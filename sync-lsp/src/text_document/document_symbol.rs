@@ -36,7 +36,7 @@ impl<T: TypeProvider> Server<T> {
     /// # Argument
     /// * `callback` - A callback which is called with the following parameters as soon as document symbols are requested:
     ///     * The server instance receiving the response.
-    ///     * The [`TextDocumentIdentifer`] of the document that has been opened.
+    ///     * The [`TextDocumentIdentifer`] of the target document.
     ///     * `return` - A list of symbols to display.
 
     pub fn on_document_symbol(&mut self, callback: fn(&mut Server<T>, TextDocumentIdentifer) -> Vec<SymbolInformation>) {
