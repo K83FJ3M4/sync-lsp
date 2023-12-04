@@ -13,7 +13,7 @@ use syn::{
     ItemImpl, ImplItemType, TypeNever, TypePath, ImplItem
 };
 
-/// This macro provides default implementations for all required types in [`TypeProvider`].
+/// This macro provides default implementations for all required types in `TypeProvider`.
 /// 
 /// # Example
 /// ```

@@ -1,3 +1,10 @@
+//! implementation of the `textDocument/documentHighlight` request
+//! 
+//! # Usage
+//! Whenever a user selects a range in the document, the server might want to highlight
+//! references or important parts of the document via [`Server::on_document_highlight`]. For example, if the user selects a
+//! break statement, the loop it breaks could be highlighted.
+
 use crate::TypeProvider;
 use crate::{Server, connection::Endpoint};
 use crate::connection::Callback;
@@ -40,6 +47,16 @@ impl DocumentHighlightOptions {
 }
 
 impl<T: TypeProvider> Server<T> {
+
+    /// Sets the callback that will be called to [highlight parts of a file](self).
+    /// 
+    /// # Argument
+    /// * `callback` - A callback which is called with the following parameters as soon as a highlight is requested:
+    ///     * The server instance receiving the response.
+    ///     * The [`TextDocumentIdentifer`] of the document that has been opened.
+    ///     * The [`Position`] of the cursor.
+    ///     * `return` - A list of highlights to display.
+
     pub fn on_document_highlight(&mut self, callback: fn(&mut Server<T>, TextDocumentIdentifer, Position) -> Vec<DocumentHighlight>) {
         self.text_document.document_highlight.set_callback(Callback::request(move |server, params: TextDocumentPositionParams| {
             callback(server, params.text_document, params.position)
