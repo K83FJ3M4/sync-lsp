@@ -1,3 +1,9 @@
+//! implementation of the `textDocument/willSaveWaitUntil` notification.
+//! 
+//! # Usage
+//! Whenever a document is about to be saved, [`Server::on_will_save_wait_until`]
+//! gives the server a chance to modify the document before it is saved.
+
 use crate::TypeProvider;
 use crate::{Server, connection::Endpoint};
 use crate::connection::Callback;
@@ -25,6 +31,16 @@ impl WillSaveWaitUntilOptions {
 }
 
 impl<T: TypeProvider> Server<T> {
+
+    /// Sets the callback that will be called to [modify a document before it is saved](self).
+    /// 
+    /// # Argument
+    /// * `callback` - A callback which is called with the following parameters as soon as a document is about to be saved:
+    ///     * The server instance receiving the response.
+    ///     * The [`TextDocumentIdentifer`] of the target document.
+    ///     * The [`TextDocumentSaveReason`] that specifies why the document is saved.
+    ///     * `return` - A list of edits to apply to the document.
+
     pub fn on_will_save_wait_until(&mut self, callback: fn(&mut Server<T>, TextDocumentIdentifer, TextDocumentSaveReason) -> Vec<TextEdit>) {
         self.text_document.will_save_wait_until.set_callback(Callback::request(move |server, params: WillSaveWaitUntilTextDocumentParams| {
             callback(server, params.text_document, params.reason)
