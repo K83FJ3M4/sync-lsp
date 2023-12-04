@@ -1,7 +1,7 @@
 //! impl of the `textDocument/publishDiagnostics` notification
 //! 
 //! # Usage
-//! A server can publish diagnostics for a specific document via [`Server::publish_diagnostics`]
+//! A server can publish diagnostics for a specific document via [`Connection::publish_diagnostics`]
 //! in any callback. The client will then display these diagnostics in the editor.
 
 use serde::{Serialize, Deserialize};
