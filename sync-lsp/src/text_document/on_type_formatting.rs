@@ -39,6 +39,18 @@ impl DocumentOnTypeFormattingOptions {
 }
 
 impl<T: TypeProvider> Server<T> {
+
+    /// Sets the callback that will be called to implement [on type formatting](self).
+    ///
+    /// # Argument
+    /// * `callback` - A callback which is called with the following parameters as soon as a document is formatted:
+    ///     * `server` - The server on which the request was received.
+    ///     * `document` - The [`TextDocumentIdentifer`] of the target document.
+    ///     * `position` - The [`Position`] of the cursor.
+    ///     * `options` - The [`FormattingOptions`] that specify how the document should be formatted.
+    ///     * `return` - A list of edits to apply to the document.
+
+
     pub fn on_type_formatting(&mut self, callback: fn(&mut Server<T>, TextDocumentIdentifer, Position, String, FormattingOptions) -> Vec<TextEdit>) {
         self.text_document.on_type_formatting.set_callback(Callback::request(move |server, params: DocumentOnTypeFormattingParams | {
             callback(server, params.text_document, params.position, params.ch, params.options)
