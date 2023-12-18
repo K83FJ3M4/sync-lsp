@@ -30,7 +30,7 @@ pub(super) struct WindowService<T: TypeProvider> {
 /// On debug builds, all messages are shown.
 /// On release builds, only messages with a priority of `Info` or higher are shown.
 #[repr(i32)]
-#[derive(Serialize_repr, Debug)]
+#[derive(Serialize_repr, Debug, Clone, Copy)]
 pub enum MessageType {
     Error = 1,
     Warning = 2,

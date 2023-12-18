@@ -53,44 +53,44 @@ pub mod rename;
 
 pub type DocumentUri = String;
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 struct TextDocumentPositionParams {
     pub text_document: TextDocumentIdentifer,
     pub position: Position,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct TextEdit {
     pub range: Range,
     pub new_text: String,
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Clone)]
 pub struct Location {
     pub uri: DocumentUri,
     pub range: Range,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TextDocumentIdentifer {
     pub uri: DocumentUri,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Position {
     pub line: i32,
     pub character: i32,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Range {
     pub start: Position,
     pub end: Position,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct VersionedTextDocumentIdentifier {
     pub uri: DocumentUri,
     pub version: i32,
